@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='timer.png') }}" alt="Timer Icon" width="32" height="32">
+        <a href="."><h1>Teamleader Softwaretools</h1></a>
+    </header>
+    <div class="content">
+        <div class="box-container">
+            <div class="box">
+                <a href="zeiten-hochladen.html">
+                    <img src="{{ url_for('static', filename='upload.png') }}" alt="Hochladen Icon" width="32" height="32">
+                    Zeiten hochladen
+                </a>
+            </div>
+            <div class="box">
+                <a href="zeiten-verwalten.html">
+                    <img src="{{ url_for('static', filename='files.png') }}" alt="Dateien Icon" width="32" height="32">
+                    Zeiten verwalten
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

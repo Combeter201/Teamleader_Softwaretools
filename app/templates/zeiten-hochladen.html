@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teamleader Softwaretools</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+</head>
+<body>
+<header>
+    <img src="{{ url_for('static', filename='timer.png') }}" alt="Timer Icon" width="32" height="32">
+    <a href="."><h1>Teamleader Softwaretools</h1></a>
+</header>
+<div class="content">
+    <div class="box-container">
+        <h3>CSV Datei hochladen</h3>
+        <div class="box">
+            <div class="file-upload-container">
+                <form id="uploadForm" action="/zeiten-hochladen.html" method="post" enctype="multipart/form-data">
+                    <input type="file" id="csvFile" name="csvFile" accept=".csv" onchange="submitForm()">
+                </form>
+                <button type="button" class="clear-button" onclick="clearData()">
+                    <img src="{{ url_for('static', filename='trashcan.png') }}" alt="Abfalleimer">
+                </button>
+                <button id="uploadButton" class="upload-button" onclick="openModal()">
+                    <img src="{{ url_for('static', filename='upload.png') }}" alt="Upload Icon">
+                </button>
+            </div>
+
+        </div>
+        <div id="csvContent">
+            {% if message %}
+            <p class="error-message" >{{ message }}</p>
+            {% endif %}
+            {% if sorted_data %}
+            {% for weekday_and_hours, data_rows in sorted_data.items() %}
+            {% set total_hours = data_rows[0]['Gesamtstunden'] %}
+            <h4>{{ weekday_and_hours | safe }} <span class="total-hours">[{{ total_hours }} Stunden]</span></h4>
+            <table>
+                <thead>
+                <tr>
+                    <th>Von</th>
+                    <th>Bis</th>
+                    <th>Typ</th>
+                    <th>Kunde</th>
+                    <th>Phase</th>
+                    <th>Projekt</th>
+                    <th>Abrechenbar</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in data_rows %}
+                {% for zeit in row['Zeiten'] %}
+                <tr>
+                    <td>{{ zeit['Von'] }}</td>
+                    <td>{{ zeit['Bis'] }}</td>
+                    <td>{{ zeit['Typ'] }}</td>
+                    <td>{{ zeit['Kunde'] }}</td>
+                    <td>{{ zeit['Phase'] }}</td>
+                    <td>{{ zeit['Projekt'] }}</td>
+                    <td>{{ zeit['Abrechenbar'] }}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Zeiten in Teamleader übertragen?</h2>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-buttons">
+            <button class="confirm-button" onclick="uploadTimes()">Bestätigen</button>
+            <button class="cancel-button" onclick="closeModal()">Abbrechen</button>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+</body>
+</html>
