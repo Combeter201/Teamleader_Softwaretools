@@ -28,23 +28,26 @@ header h1 {
     color: #333;
 }
 
-/* Main content styles */
+/* Content Styles */
 .content {
-    flex-grow: 1;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    padding-top: 20px;
+    padding-bottom: 2rem; /* Abstand nach unten */
+    flex-grow: 1;
+    overflow: auto;
 }
 
 /* Box container styles */
 .box-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    width: 100%;
+    max-width: 800px;
     background-color: #fff;
-    padding: 40px;
+    padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     border-radius: 8px;
+    margin-top: 20px;
 }
 
 .box {
@@ -56,15 +59,11 @@ header h1 {
     color: #333;
 }
 
-.box:hover {
-    background-color: #d4d4d4;
-}
-
-.box a {
+.teamleader-users-container {
     display: flex;
     align-items: center;
-    text-decoration: none;
-    color: #333;
+    justify-content: center;
+    gap: 10px;
 }
 
 .box-container h3 {
@@ -81,11 +80,11 @@ a {
     text-decoration: none;
 }
 
-.box-container {
+.box-content {
+    margin-top: 20px;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 10px;
+    justify-content: flex-start;
 }
 
 .teams {
@@ -130,4 +129,92 @@ select.teams::part(listbox) {
 
 .confirm-button:hover {
     background-color: #7d89cd;
+}
+/* Header styles */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header img {
+    margin-right: 10px;
+}
+
+header h1 {
+    font-size: 20px;
+    margin: 0;
+    color: #333;
+}
+
+header .left-container {
+    display: flex;
+    align-items: center;
+}
+
+header .right-container {
+    display: flex;
+    align-items: center;
+}
+
+.login-button {
+    background-color: #8794df;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex;
+    margin-right: 1rem;
+}
+
+.login-button:hover {
+    background-color: #7d89cd;
+}
+
+
+.username {
+    margin-right: 20px;
+    font-size: 1.2em;
+    color: #333;
+}
+
+/* File Upload Styles */
+.team-selection-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Adjust spacing between file input and button */
+}
+
+/* Table Styles */
+table {
+    width: 50%;
+    border-collapse: collapse;
+    margin-top: 20px; /* Abstand über der Tabelle */
+}
+
+table, th, td {
+    border: 1px solid #ccc;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: table;
 }
