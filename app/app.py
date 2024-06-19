@@ -13,6 +13,11 @@ def home():
     username = session.get('username')
     return render_template('index.html', username=username)
 
+@app.route('/error.html')
+def errror():
+    username = session.get('username')
+    return render_template('error.html', username=username)
+
 @app.route('/upload-times.html')
 def zeiten_hochladen():
     username = session.get('username')

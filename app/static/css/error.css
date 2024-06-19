@@ -1,0 +1,15 @@
+.error-button {
+    background-color: #de8787;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.box-container img{
+    width: 15rem
+}
