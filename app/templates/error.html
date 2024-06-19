@@ -12,7 +12,7 @@
 <body>
 <header>
     <div class="left-container">
-        <img src="{{ url_for('static', filename='timer.png') }}" alt="Timer Icon" width="32" height="32">
+        <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="32" height="32">
         <a href="."><h1>Teamleader Softwaretools</h1></a>
     </div>
     <div class="right-container">
@@ -30,7 +30,7 @@
         {% if error_message %}
         <p class="error-message">{{ error_message }}</p>
         {% else %}
-        <img src="{{ url_for('static', filename='error.gif') }}" alt="Error Image">
+        <img src="{{ url_for('static', filename='assets/error.gif') }}" alt="Error Image">
         <button type="button" class="error-button" disabled>
             Nothing to find here!
         </button>

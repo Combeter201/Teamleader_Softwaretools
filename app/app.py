@@ -29,7 +29,7 @@ def zeiten_verwalten():
 
 @app.route('/download-template')
 def download_template():
-    return send_from_directory(directory='static', path='template.csv', as_attachment=True)
+    return send_from_directory(directory='static/data', path='template.csv', as_attachment=True)
 
 @app.route('/upload-times.html', methods=['GET', 'POST'])
 def upload():

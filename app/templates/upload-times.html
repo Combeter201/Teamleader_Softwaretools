@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teamleader Softwaretools</title>
+    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
 </head>
 <body onload="checkTableVisibility()">
 <header>
     <div class="left-container">
-        <img src="{{ url_for('static', filename='timer.png') }}" alt="Timer Icon" width="32" height="32">
+        <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="32" height="32">
         <a href="."><h1>Teamleader Softwaretools</h1></a>
     </div>
     <div class="right-container">
@@ -31,13 +32,13 @@
                     <input type="file" id="csvFile" name="csvFile" accept=".csv" onchange="submitForm()">
                 </form>
                 <button id="downloadButton" class="upload-button" onclick="downloadTemplate()">
-                    <img src="{{ url_for('static', filename='download.png') }}" alt="Download Icon">
+                    <img src="{{ url_for('static', filename='assets/download.png') }}" alt="Download Icon">
                 </button>
                 <button id="uploadButton" class="upload-button" onclick="openModal()" disabled>
-                    <img src="{{ url_for('static', filename='upload.png') }}" alt="Upload Icon">
+                    <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Upload Icon">
                 </button>
                 <button type="button" class="clear-button" onclick="clearData()" disabled>
-                    <img src="{{ url_for('static', filename='trashcan.png') }}" alt="Abfalleimer">
+                    <img src="{{ url_for('static', filename='assets/trashcan.png') }}" alt="Abfalleimer">
                 </button>
             </div>
         </div>
