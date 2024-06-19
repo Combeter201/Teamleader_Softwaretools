@@ -6,31 +6,47 @@
     <title>Teamleader Softwaretools</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
 </head>
-<body>
+<body onload="checkTableVisibility()">
 <header>
-    <img src="{{ url_for('static', filename='timer.png') }}" alt="Timer Icon" width="32" height="32">
-    <a href="."><h1>Teamleader Softwaretools</h1></a>
+    <div class="left-container">
+        <img src="{{ url_for('static', filename='timer.png') }}" alt="Timer Icon" width="32" height="32">
+        <a href="."><h1>Teamleader Softwaretools</h1></a>
+    </div>
+    <div class="right-container">
+        {% if username %}
+            <span class="username">Willkommen, {{ username }}</span>
+        {% else %}
+            <button type="button" class="login-button" onclick="login()">
+                Anmelden
+            </button>
+        {% endif %}
+    </div>
 </header>
 <div class="content">
     <div class="box-container">
         <h3>CSV Datei hochladen</h3>
         <div class="box">
             <div class="file-upload-container">
-                <form id="uploadForm" action="/zeiten-hochladen.html" method="post" enctype="multipart/form-data">
+                <form id="uploadForm" action="/upload-times.html" method="post" enctype="multipart/form-data">
                     <input type="file" id="csvFile" name="csvFile" accept=".csv" onchange="submitForm()">
                 </form>
-                <button type="button" class="clear-button" onclick="clearData()">
-                    <img src="{{ url_for('static', filename='trashcan.png') }}" alt="Abfalleimer">
+                <button id="downloadButton" class="upload-button" onclick="downloadTemplate()">
+                    <img src="{{ url_for('static', filename='download.png') }}" alt="Download Icon">
                 </button>
-                <button id="uploadButton" class="upload-button" onclick="openModal()">
+                <button id="uploadButton" class="upload-button" onclick="openModal()" disabled>
                     <img src="{{ url_for('static', filename='upload.png') }}" alt="Upload Icon">
                 </button>
+                <button type="button" class="clear-button" onclick="clearData()" disabled>
+                    <img src="{{ url_for('static', filename='trashcan.png') }}" alt="Abfalleimer">
+                </button>
             </div>
-
         </div>
         <div id="csvContent">
-            {% if message %}
-            <p class="error-message" >{{ message }}</p>
+            {% if error_message %}
+            <p class="error-message">{{ error_message }}</p>
+            {% endif %}
+            {% if success_message %}
+            <p class="success-message">{{ success_message }}</p>
             {% endif %}
             {% if sorted_data %}
             {% for weekday_and_hours, data_rows in sorted_data.items() %}
@@ -76,11 +92,12 @@
             <span class="close" onclick="closeModal()">&times;</span>
         </div>
         <div class="modal-buttons">
-            <button class="confirm-button" onclick="uploadTimes()">Bestätigen</button>
+            <button class="confirm-button" onclick="uploadtoTeamleader()">Bestätigen</button>
             <button class="cancel-button" onclick="closeModal()">Abbrechen</button>
         </div>
     </div>
 </div>
 <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 </html>

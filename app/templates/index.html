@@ -9,25 +9,37 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
 </head>
 <body>
-    <header>
+<header>
+    <div class="left-container">
         <img src="{{ url_for('static', filename='timer.png') }}" alt="Timer Icon" width="32" height="32">
         <a href="."><h1>Teamleader Softwaretools</h1></a>
-    </header>
-    <div class="content">
-        <div class="box-container">
-            <div class="box">
-                <a href="zeiten-hochladen.html">
-                    <img src="{{ url_for('static', filename='upload.png') }}" alt="Hochladen Icon" width="32" height="32">
-                    Zeiten hochladen
-                </a>
-            </div>
-            <div class="box">
-                <a href="zeiten-verwalten.html">
-                    <img src="{{ url_for('static', filename='files.png') }}" alt="Dateien Icon" width="32" height="32">
-                    Zeiten verwalten
-                </a>
-            </div>
+    </div>
+    <div class="right-container">
+        {% if username %}
+        <span class="username">Willkommen, {{ username }}</span>
+        {% else %}
+        <button type="button" class="login-button" onclick="login()">
+            Anmelden
+        </button>
+        {% endif %}
+    </div>
+</header>
+<div class="content">
+    <div class="box-container">
+        <div class="box">
+            <a href="upload-times.html">
+                <img src="{{ url_for('static', filename='upload.png') }}" alt="Hochladen Icon" width="32" height="32">
+                Zeiten hochladen
+            </a>
+        </div>
+        <div class="box">
+            <a href="manage-times.html">
+                <img src="{{ url_for('static', filename='files.png') }}" alt="Dateien Icon" width="32" height="32">
+                Zeiten verwalten
+            </a>
         </div>
     </div>
+</div>
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 </html>

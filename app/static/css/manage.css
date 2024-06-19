@@ -12,7 +12,6 @@ body {
 /* Header styles */
 header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: 20px;
     background-color: #fff;
@@ -27,16 +26,6 @@ header h1 {
     font-size: 20px;
     margin: 0;
     color: #333;
-}
-
-header .left-container {
-    display: flex;
-    align-items: center;
-}
-
-header .right-container {
-    display: flex;
-    align-items: center;
 }
 
 /* Main content styles */
@@ -92,7 +81,36 @@ a {
     text-decoration: none;
 }
 
-.login-button {
+.box-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.teams {
+    background-color: #8794df;
+    color: white;
+    border: none;
+    border-radius: 0px;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex; /* Initial versteckt */
+}
+
+.teams:focus{
+    outline: none;
+}
+
+select.teams::part(listbox) {
+    background-color: red;
+    padding: 0.5em;
+    margin: 0.5em;
+}
+
+.confirm-button {
     background-color: #8794df;
     color: white;
     border: none;
@@ -100,16 +118,16 @@ a {
     cursor: pointer;
     border-radius: 4px;
     font-size: 16px;
-    display: flex;
-    margin-right: 1rem;
+    display: flex; /* Initial versteckt */
 }
 
-.login-button:hover {
+.confirm-button img {
+    filter: invert(100%);
+    width: 25px;
+    height: 25px;
+    margin: auto;
+}
+
+.confirm-button:hover {
     background-color: #7d89cd;
-}
-
-.username {
-    margin-right: 20px;
-    font-size: 1.2em;
-    color: #333;
 }

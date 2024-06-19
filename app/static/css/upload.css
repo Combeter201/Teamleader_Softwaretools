@@ -9,13 +9,14 @@ body {
     min-height: 100vh;
 }
 
+/* Header styles */
 header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 20px;
     background-color: #fff;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    z-index: 100;
 }
 
 header img {
@@ -28,6 +29,49 @@ header h1 {
     color: #333;
 }
 
+header .left-container {
+    display: flex;
+    align-items: center;
+}
+
+header .right-container {
+    display: flex;
+    align-items: center;
+}
+
+.left-container {
+    display: flex;
+    align-items: center;
+}
+
+.right-container {
+    display: flex;
+    align-items: center;
+}
+
+.username {
+    margin-right: 20px;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.login-button {
+    background-color: #8794df;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex;
+    margin-right: 1rem;
+}
+
+.login-button:hover {
+    background-color: #7d89cd;
+}
+
+/* Content Styles */
 .content {
     display: flex;
     flex-direction: column;
@@ -78,6 +122,7 @@ a {
     height: 32px;
 }
 
+/* Table Styles */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -97,6 +142,7 @@ th {
     background-color: #f2f2f2;
 }
 
+/* File Upload Styles */
 .file-upload-container {
     display: flex;
     align-items: center;
@@ -126,11 +172,12 @@ input[type="file"]::file-selector-button:hover {
     background-color: #7d89cd;
 }
 
+/* Button Styles */
 .upload-button {
     background-color: #8794df;
     color: white;
     border: none;
-     padding: 10px 10px;
+    padding: 10px 10px;
     cursor: pointer;
     border-radius: 4px;
     font-size: 16px;
@@ -146,25 +193,6 @@ input[type="file"]::file-selector-button:hover {
     width: 25px;
     height: 25px;
     margin: auto;
-}
-
-/* New CSS class for error messages */
-.error-message {
-    color: red;
-    text-align: center;
-    margin-top: 20px;
-}
-
-.success-message {
-    color: green;
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* custom.css */
-.total-hours {
-    color: #4abfc1;
-    font-weight: bold;
 }
 
 .clear-button {
@@ -187,6 +215,25 @@ input[type="file"]::file-selector-button:hover {
 
 .clear-button:hover {
     background-color: #7d89cd;
+}
+
+/* New CSS class for error messages */
+.error-message {
+    color: red;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.success-message {
+    color: green;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* custom.css */
+.total-hours {
+    color: #4abfc1;
+    font-weight: bold;
 }
 
 /* Modal Styling */
@@ -253,4 +300,16 @@ input[type="file"]::file-selector-button:hover {
 
 .confirm-button:hover, .cancel-button:hover {
     background-color: #7d89cd;
+}
+
+/* Stile für deaktivierte Buttons */
+button:disabled,
+button:disabled:hover {
+    background-color: #bcbcbc; /* Grau */
+    color: lightgrey; /* Dunkleres Grau */
+    cursor: not-allowed; /* "Nicht erlaubt"-Cursor */
+}
+button:disabled img,
+button:disabled:hover img {
+    filter: invert(60%); /* Bilder ebenfalls ausgegraut */
 }
