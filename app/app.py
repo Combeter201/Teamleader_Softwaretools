@@ -4,7 +4,7 @@ import requests
 from config import Config
 from utils.csv_utils import parse_csv, sort_and_group_by_date
 from utils.teamleader_utils import get_teamleader_token, get_teamleader_user, get_teamleader_teams, \
-    get_teamleader_user_info
+    get_teamleader_user_info, get_teamleader_user_times
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY  # Setze einen geheimen Schlüssel für die Sitzungsverwaltung
@@ -40,22 +40,36 @@ def get_teams():
     access_token = session.get('access_token')
     request_data = request.get_json()
     selected_id = request_data.get('selectedId')
+    start_tmstmp = request_data.get('start_tmstmp')
+    end_tmstmp = request_data.get('end_tmstmp')
 
     response = get_teamleader_teams(access_token, selected_id)
 
-    members_info = []  # List to store member information
+    members_info = []
 
     for team in response:
         members = team.get('members', [])
         for member in members:
             member_id = member.get('id')
             first_name, last_name = get_teamleader_user_info(access_token, member_id)
-            members_info.append({
-                'first_name': first_name,
-                'last_name': last_name
-            })
+            try:
+                times_data = get_teamleader_user_times(access_token, member_id, start_tmstmp, end_tmstmp)
+                members_info.append({
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'total_duration': times_data["total_duration"],
+                    'invoiceable_duration': times_data["invoiceable_duration"],
+                    'non_invoiceable_duration': times_data["non_invoiceable_duration"],
+                    'total_days': times_data["total_days"],
+                    'invoiceable_percentage': times_data["invoiceable_percentage"],
+                    'overtime_hours': times_data["overtime_hours"]
+                })
+            except Exception as e:
+                error_message = f"Dir fehlen die Berechtigung, um dieses Team anzuschauen"
+                return render_template('manage-times.html', error_message=error_message, username=username)
 
     return render_template('manage-times.html', members_info=members_info, username=username)
+
 
 @app.route('/download-template')
 def download_template():

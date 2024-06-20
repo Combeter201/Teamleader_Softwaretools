@@ -42,7 +42,7 @@ header h1 {
 /* Box container styles */
 .box-container {
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
     background-color: #fff;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -193,13 +193,17 @@ header .right-container {
 
 /* Table Styles */
 table {
-    width: 50%;
+    width: 100%;
     border-collapse: collapse;
     margin-top: 20px; /* Abstand über der Tabelle */
 }
 
 table, th, td {
     border: 1px solid #ccc;
+}
+
+.times {
+    text-align:right;
 }
 
 th, td {
@@ -217,4 +221,52 @@ th {
 
 .visible {
     display: table;
+}
+
+input[type="month"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #8794df;
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(100%);
+    cursor: pointer;
+}
+
+input[type="month"]::-ms-expand {
+    display: none;
+}
+
+input[type="month"]:hover {
+    background-color: #7d89cd;
+}
+
+/* Stile für deaktivierte Buttons */
+button:disabled,
+button:disabled:hover {
+    background-color: #bcbcbc; /* Grau */
+    color: lightgrey; /* Dunkleres Grau */
+    cursor: not-allowed; /* "Nicht erlaubt"-Cursor */
+}
+button:disabled img,
+button:disabled:hover img {
+    filter: invert(60%); /* Bilder ebenfalls ausgegraut */
+}
+
+/* New CSS class for error messages */
+.error-message {
+    color: red;
+    text-align: center;
+    margin-top: 20px;
 }

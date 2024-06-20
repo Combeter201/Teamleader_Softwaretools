@@ -68,7 +68,7 @@ def get_teamleader_user_info(access_token, member_id):
     try:
         headers = {'Authorization': f'Bearer {access_token}'}
         body = json.dumps({
-                "id": member_id
+            "id": member_id
         })
 
         response = requests.post('https://api.focus.teamleader.eu/users.info', headers=headers, data=body)
@@ -86,3 +86,84 @@ def get_teamleader_user_info(access_token, member_id):
     except KeyError as e:
         print(f"Error parsing JSON data: {e}")
         return None, None
+
+
+def get_teamleader_user_times(access_token, member_id, start_tmstmp, end_tmstmp):
+    try:
+        headers = {'Authorization': f'Bearer {access_token}'}
+        body = {
+            "filter": {
+                "user_id": member_id,
+                "started_after": start_tmstmp,
+                "ended_before": end_tmstmp,
+                "sort": [
+                    {
+                        "field": "starts_on"
+                    }
+                ]
+            }
+        }
+
+        response = requests.post('https://api.focus.teamleader.eu/timeTracking.list', headers=headers, json=body)
+        response.raise_for_status()
+        data = response.json()
+
+        if 'data' in data and data['data']:  # Check if 'data' exists and is not empty
+            total_duration = summarize_work_entries(data['data'])
+            return total_duration
+        else:
+            raise ValueError("Empty data['data'] in API response")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching user info: {e}")
+        return None, None
+    except (KeyError, ValueError) as e:
+        print(f"Error processing API response: {e}")
+        return None, None
+
+
+def summarize_work_entries(work_entries):
+    total_duration_seconds = 0
+    invoiceable_duration_seconds = 0
+    non_invoiceable_duration_seconds = 0
+    work_days = set()
+
+    for entry in work_entries:
+        duration_seconds = entry["duration"]
+        total_duration_seconds += duration_seconds
+
+        if entry["invoiceable"]:
+            invoiceable_duration_seconds += duration_seconds
+        else:
+            non_invoiceable_duration_seconds += duration_seconds
+
+        work_days.add(entry["started_on"])
+
+    total_days = len(work_days)
+
+    # Calculate overtime
+    workdays_count = total_days
+    workdays_hours = workdays_count * 8  # Assuming 8 hours per workday
+    total_hours = total_duration_seconds / 3600
+
+    overtime_hours = max(0, total_hours - workdays_hours)
+
+    # Calculate invoiceable percentage
+    if total_duration_seconds > 0:
+        invoiceable_percentage = ((invoiceable_duration_seconds - overtime_hours * 3600) / total_duration_seconds) * 100
+    else:
+        invoiceable_percentage = 0
+
+    # Convert total duration to hours and minutes
+    total_hours = total_duration_seconds // 3600
+    total_minutes = (total_duration_seconds % 3600) // 60
+
+    return {
+        "total_duration": f"{total_hours},{total_minutes:02}",
+        "invoiceable_duration": f"{invoiceable_duration_seconds // 3600},{(invoiceable_duration_seconds % 3600) // 60:02}",
+        "non_invoiceable_duration": f"{non_invoiceable_duration_seconds // 3600},{(non_invoiceable_duration_seconds % 3600) // 60:02}",
+        "total_days": total_days,
+        "invoiceable_percentage": round(invoiceable_percentage, 2),
+        "overtime_hours": round(overtime_hours, 2)
+    }
+
