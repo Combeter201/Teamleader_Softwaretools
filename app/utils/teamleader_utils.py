@@ -3,6 +3,8 @@ import json
 import requests
 from urllib.parse import urlencode
 
+from flask import session
+
 
 def get_teamleader_token(client_id, redirect_uri, client_secret=None, code=None):
     if code:
@@ -15,6 +17,7 @@ def get_teamleader_token(client_id, redirect_uri, client_secret=None, code=None)
             'grant_type': 'authorization_code'
         }
         response = requests.post('https://app.teamleader.eu/oauth2/access_token', headers=headers, data=body)
+        session['refresh_token'] = response.json()['refresh_token']
         return response.json()
     else:
         params = {
@@ -24,6 +27,21 @@ def get_teamleader_token(client_id, redirect_uri, client_secret=None, code=None)
         }
         auth_url = f"https://app.teamleader.eu/oauth2/authorize?{urlencode(params)}"
         return auth_url
+
+
+def refresh_teamleader_token(client_id, client_secret, refresh_token):
+    headers = {'content-type': 'application/x-www-form-urlencoded'}
+    body = {
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'refresh_token': refresh_token,
+        'grant_type': 'refresh_token'
+    }
+    response = requests.post('https://app.teamleader.eu/oauth2/access_token', headers=headers, data=body)
+    session['access_token'] = response.json()['access_token']
+    session['refresh_token'] = response.json()['refresh_token']
+    print('Token erneuert')
+    return response.json()
 
 
 def get_teamleader_user(access_token):

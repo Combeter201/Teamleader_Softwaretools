@@ -8,10 +8,19 @@ from flask import Flask, render_template, request, send_from_directory, jsonify,
 from config import Config
 from utils.csv_utils import parse_csv, sort_and_group_by_date
 from utils.teamleader_utils import get_teamleader_token, get_teamleader_user, get_teamleader_teams, \
-    get_teamleader_user_info, get_teamleader_user_times
+    get_teamleader_user_info, get_teamleader_user_times, refresh_teamleader_token
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY  # Setze einen geheimen Schlüssel für die Sitzungsverwaltung
+
+
+def handle_token_refresh():
+    try:
+        refresh_teamleader_token(Config.CLIENT_ID, Config.CLIENT_SECRET, session.get('refresh_token'))
+    except Exception as e:
+        error_message = "Token ist abgelaufen. Melden Sie sich erneut an."
+        return render_template('error.html', error_message=error_message)
+    return None
 
 
 @app.route('/')
@@ -40,6 +49,10 @@ def zeiten_verwalten():
 
 @app.route('/manage-times.html', methods=['POST'])
 def get_teams():
+    error_redirect = handle_token_refresh()
+    if error_redirect:
+        return error_redirect
+
     username = session.get('username')
     access_token = session.get('access_token')
     request_data = request.get_json()
@@ -89,6 +102,7 @@ def download_template():
 
 @app.route('/upload-times.html', methods=['GET', 'POST'])
 def upload():
+
     username = session.get('username')
     if 'csvFile' not in request.files:
         return render_template('upload-times.html', error_message='Keine Datei ausgewählt!', username=username)
@@ -152,6 +166,10 @@ def login():
 
 @app.route('/upload-to-teamleader')
 def fetch_teamleader_data():
+    error_redirect = handle_token_refresh()
+    if error_redirect:
+        return error_redirect
+
     access_token = session.get('access_token')
     if not access_token:
         return redirect(session.get('previous_url', '/'))

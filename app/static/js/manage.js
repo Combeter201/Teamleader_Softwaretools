@@ -89,8 +89,8 @@ function sendSelectedIdToPython() {
 document.addEventListener('DOMContentLoaded', function() {
     var progressBar = document.getElementById('progress');
     progressBar.style.display = 'flex'; // Verstecke die Fortschrittsleiste nach Abschluss der Animation
-    progressBar.style.width = '100%'; // Starte mit 100% Breite
     progressBar.style.transition = 'width 10s linear';
+    progressBar.style.width = '100%'; // Starte mit 100% Breite
 
     setTimeout(function() {
         var loadingBar = document.getElementById('loadingBar');
