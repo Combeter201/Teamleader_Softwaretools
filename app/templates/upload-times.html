@@ -63,19 +63,21 @@
                     <th>Phase</th>
                     <th>Projekt</th>
                     <th>Abrechenbar</th>
+                    <th>Beschreibung</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for row in data_rows %}
                 {% for zeit in row['Zeiten'] %}
                 <tr>
-                    <td>{{ zeit['Von'] }}</td>
-                    <td>{{ zeit['Bis'] }}</td>
-                    <td>{{ zeit['Typ'] }}</td>
+                    <td id="starttime">{{ zeit['Von'] }}</td>
+                    <td id="endtime">{{ zeit['Bis'] }}</td>
+                    <td id="type">{{ zeit['Typ'] }}</td>
                     <td>{{ zeit['Kunde'] }}</td>
                     <td>{{ zeit['Phase'] }}</td>
                     <td>{{ zeit['Projekt'] }}</td>
                     <td>{{ zeit['Abrechenbar'] }}</td>
+                    <td id="description">{{ zeit['Beschreibung'] }}</td>
                 </tr>
                 {% endfor %}
                 {% endfor %}

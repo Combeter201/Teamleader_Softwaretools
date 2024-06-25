@@ -1,6 +1,10 @@
-from flask import Flask, render_template, request, send_from_directory, jsonify, redirect, session
+import csv
+import io
 import json
+
 import requests
+from flask import Flask, render_template, request, send_from_directory, jsonify, redirect, session
+
 from config import Config
 from utils.csv_utils import parse_csv, sort_and_group_by_date
 from utils.teamleader_utils import get_teamleader_token, get_teamleader_user, get_teamleader_teams, \
@@ -40,8 +44,11 @@ def get_teams():
     access_token = session.get('access_token')
     request_data = request.get_json()
     selected_id = request_data.get('selectedId')
-    start_tmstmp = request_data.get('start_tmstmp')
+    first_tmstmp = request_data.get('first_tmstmp')
+    second_tmstmp = request_data.get('second_tmstmp')
+    third_tmstmp = request_data.get('third_tmstmp')
     end_tmstmp = request_data.get('end_tmstmp')
+    fourth_tmstmp = request_data.get('fourth_tmstmp')
 
     response = get_teamleader_teams(access_token, selected_id)
 
@@ -53,7 +60,9 @@ def get_teams():
             member_id = member.get('id')
             first_name, last_name = get_teamleader_user_info(access_token, member_id)
             try:
-                times_data = get_teamleader_user_times(access_token, member_id, start_tmstmp, end_tmstmp)
+
+                times_data = get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp,
+                                                       third_tmstmp, end_tmstmp, fourth_tmstmp)
                 members_info.append({
                     'first_name': first_name,
                     'last_name': last_name,
@@ -64,10 +73,12 @@ def get_teams():
                     'invoiceable_percentage': times_data["invoiceable_percentage"],
                     'overtime_hours': times_data["overtime_hours"]
                 })
+
             except Exception as e:
                 error_message = f"Dir fehlen die Berechtigung, um dieses Team anzuschauen"
                 return render_template('manage-times.html', error_message=error_message, username=username)
 
+    session['members_info'] = members_info
     return render_template('manage-times.html', members_info=members_info, username=username)
 
 
@@ -172,6 +183,46 @@ def fetch_teamleader_data():
 def clear_data():
     session.pop('csv_data_storage', None)  # Löschen der gespeicherten CSV-Daten aus der Sitzung
     return jsonify({'status': 'success', 'message': 'Daten erfolgreich gelöscht'})
+
+
+@app.route('/download-csv')
+def download_csv():
+    # Rufe die Mitgliederinformationen ab
+    members_info = session.get("members_info")
+
+    # Erstelle einen IO-Stream für die CSV-Datei
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=';')  # Nutze ; als Trennzeichen
+
+    # Schreibe die Kopfzeile in die CSV-Datei
+    writer.writerow(
+        ['Vorname', 'Nachname', 'Erfasste Zeit', 'Abrechenbar', 'Nicht Abrechenbar', 'Arbeitstage', 'Fakuraquote',
+         'Überstunden'])
+
+    # Schreibe die Mitgliederinformationen in die CSV-Datei
+    for member in members_info:
+        writer.writerow([
+            member['first_name'],
+            member['last_name'],
+            member['total_duration'],
+            member['invoiceable_duration'],
+            member['non_invoiceable_duration'],
+            member['total_days'],
+            member['invoiceable_percentage'],
+            member['overtime_hours']
+        ])
+
+    # Setze den Cursor des IO-Streams auf den Anfang
+    output.seek(0)
+
+    # Speichere die CSV-Datei temporär auf dem Server
+    csv_filename = 'static/data/Zeitübersicht.csv'  # Beispiel: Temporärer Pfad
+
+    with open(csv_filename, 'w') as f:
+        f.write(output.getvalue())
+
+    # Sende die Datei als Download
+    return send_from_directory(directory='static/data', path='Zeitübersicht.csv', as_attachment=True)
 
 
 if __name__ == '__main__':

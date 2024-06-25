@@ -58,15 +58,31 @@
                     </optgroup>
                 </select>
                 <input type="month" id="month" name="month" class="date-input" onchange="activateTeams()">
-                <button type="button" class="confirm-button" id="confirmbutton" onclick="sendSelectedIdToPython()" disabled>
+                <button type="button" class="confirm-button" id="confirmbutton" onclick="sendSelectedIdToPython()"
+                        disabled>
                     Bestätigen
                 </button>
+                {% if members_info %}
+                <button class="download-button" onclick="downloadCSV()">
+                    <img src="{{ url_for('static', filename='assets/download.png') }}" alt="Upload Icon">
+                </button>
+                {% else %}
+                <button class="download-button" disabled>
+                    <img src="{{ url_for('static', filename='assets/download.png') }}" alt="Upload Icon">
+                </button>
+                {% endif %}
+
             </div>
         </div>
         <div id="box-content">
             {% if error_message %}
             <p class="error-message">{{ error_message }}</p>
             {% endif %}
+            <div class="loading-content">
+                <div id="loadingBar" class="loading-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+            </div>
             <table id="membersTable" class="{% if members_info %}visible{% else %}hidden{% endif %}">
                 <thead>
                 <tr>
@@ -80,7 +96,7 @@
                     <th>Überstunden</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="membersTableBody">
                 {% for member in members_info %}
                 <tr>
                     <td>{{ member.first_name }}</td>
@@ -98,7 +114,6 @@
         </div>
     </div>
 </div>
-
 <!-- Separate JavaScript file -->
 <script src="{{ url_for('static', filename='js/manage.js') }}"></script>
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>

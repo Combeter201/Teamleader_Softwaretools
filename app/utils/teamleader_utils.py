@@ -88,38 +88,57 @@ def get_teamleader_user_info(access_token, member_id):
         return None, None
 
 
-def get_teamleader_user_times(access_token, member_id, start_tmstmp, end_tmstmp):
+def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp, third_tmstmp, end_tmstmp,
+                              fourth_tmstmp):
     try:
         headers = {'Authorization': f'Bearer {access_token}'}
-        body = {
-            "filter": {
-                "user_id": member_id,
-                "started_after": start_tmstmp,
-                "ended_before": end_tmstmp,
-                "sort": [
-                    {
-                        "field": "starts_on"
-                    }
-                ]
+
+        # Determine the time intervals based on fourth_tmstmp
+        if fourth_tmstmp is None:
+            time_intervals = [
+                {"started_after": first_tmstmp, "ended_before": second_tmstmp},
+                {"started_after": second_tmstmp, "ended_before": third_tmstmp},
+                {"started_after": third_tmstmp, "ended_before": end_tmstmp}
+            ]
+        else:
+            time_intervals = [
+                {"started_after": first_tmstmp, "ended_before": second_tmstmp},
+                {"started_after": second_tmstmp, "ended_before": third_tmstmp},
+                {"started_after": third_tmstmp, "ended_before": fourth_tmstmp},
+                {"started_after": fourth_tmstmp, "ended_before": end_tmstmp}
+            ]
+
+        all_work_entries = []
+
+        for interval in time_intervals:
+            body = {
+                "filter": {
+                    "user_id": member_id,
+                    "started_after": interval["started_after"],
+                    "ended_before": interval["ended_before"],
+                    "sort": [{"field": "starts_on"}]
+                }
             }
-        }
 
-        response = requests.post('https://api.focus.teamleader.eu/timeTracking.list', headers=headers, json=body)
-        response.raise_for_status()
-        data = response.json()
+            response = requests.post('https://api.focus.teamleader.eu/timeTracking.list', headers=headers, json=body)
+            response.raise_for_status()
+            data = response.json()
 
-        if 'data' in data and data['data']:  # Check if 'data' exists and is not empty
-            total_duration = summarize_work_entries(data['data'])
+            if 'data' in data and data['data']:  # Check if 'data' exists and is not empty
+                all_work_entries.extend(data['data'])
+
+        if all_work_entries:
+            total_duration = summarize_work_entries(all_work_entries)
             return total_duration
         else:
-            raise ValueError("Empty data['data'] in API response")
+            return summarize_work_entries([])
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching user info: {e}")
-        return None, None
+        return None
     except (KeyError, ValueError) as e:
         print(f"Error processing API response: {e}")
-        return None, None
+        return None
 
 
 def summarize_work_entries(work_entries):
@@ -166,4 +185,3 @@ def summarize_work_entries(work_entries):
         "invoiceable_percentage": round(invoiceable_percentage, 2),
         "overtime_hours": round(overtime_hours, 2)
     }
-

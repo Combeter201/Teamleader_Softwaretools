@@ -84,7 +84,7 @@ header .right-container {
 
 .box-container {
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
     background-color: #fff;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -312,4 +312,20 @@ button:disabled:hover {
 button:disabled img,
 button:disabled:hover img {
     filter: invert(60%); /* Bilder ebenfalls ausgegraut */
+}
+
+#starttime{
+    width: 65px;
+}
+
+#endtime {
+    width: 65px;
+}
+
+#type {
+    width: 180px;
+}
+
+#description{
+    width: 150px;
 }
