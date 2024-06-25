@@ -1,3 +1,7 @@
+function downloadCSV() {
+    window.location.href = '/download-csv';
+}
+
 function activateTeams() {
     const teamSelect = document.getElementById('teamSelect');
     const confirmButton = document.getElementById('confirmbutton');
@@ -85,15 +89,3 @@ function sendSelectedIdToPython() {
         console.error('Error:', error);
     });
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    var progressBar = document.getElementById('progress');
-    progressBar.style.display = 'flex'; // Verstecke die Fortschrittsleiste nach Abschluss der Animation
-    progressBar.style.transition = 'width 10s linear';
-    progressBar.style.width = '100%'; // Starte mit 100% Breite
-
-    setTimeout(function() {
-        var loadingBar = document.getElementById('loadingBar');
-        loadingBar.style.display = 'none'; // Verstecke die Fortschrittsleiste nach Abschluss der Animation
-    }, 10250); // 5000ms (5 Sekunden) für die Animation
-});

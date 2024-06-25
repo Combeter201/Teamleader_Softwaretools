@@ -46,15 +46,16 @@
                         <option value="option7" id="d1701b1c-0423-0f0a-8c5d-ff1c5a72bfaa">Fabian Ott</option>
                         <option value="option8" id="6ded28b1-8987-0e20-b655-668170f2bfb5">Jannis Schuhmann</option>
                         <option value="option9" id="c9e240c0-ba18-0c89-975c-5d9ce6b31eb0">Tobias Droglauer</option>
+                        <option value="option10" id="7f88fa5f-e174-061f-9e54-8b4586234146">Reinhold Gieß</option>
                     </optgroup>
                     <optgroup label="AI">
-                        <option value="option10" id="473c86b8-3929-027c-9853-5a26f84342f5">Tillmann Richl</option>
+                        <option value="option11" id="473c86b8-3929-027c-9853-5a26f84342f5">Tillmann Richl</option>
                     </optgroup>
-                    <optgroup label="Finance">
-                        <option value="option11" id="fdc41e23-47c7-0195-855f-6ced66a34669">Valentin Böck</option>
+                    <optgroup label="Accounting">
+                        <option value="option12" id="fdc41e23-47c7-0195-855f-6ced66a34669">Valentin Böck</option>
                     </optgroup>
-                    <optgroup label="Sonstige">
-                        <option value="option12" id="523bb6f1-c8a3-0445-b85b-fcd63212d64a">Wolfgang Stifter</option>
+                    <optgroup label="Partner Management">
+                        <option value="option13" id="523bb6f1-c8a3-0445-b85b-fcd63212d64a">Wolfgang Stifter</option>
                     </optgroup>
                 </select>
                 <input type="month" id="month" name="month" class="date-input" onchange="activateTeams()">
@@ -78,11 +79,6 @@
             {% if error_message %}
             <p class="error-message">{{ error_message }}</p>
             {% endif %}
-            <div class="loading-content" id="loading-content">
-                <div class="loading-bar" id="loadingBar">
-                    <div class="progress" id="progress"></div>
-                </div>
-            </div>
             <table id="membersTable" class="{% if members_info %}visible{% else %}hidden{% endif %}">
                 <thead>
                 <tr>

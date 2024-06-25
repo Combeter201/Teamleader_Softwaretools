@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teamleader Softwaretools</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
 </head>
 <body>
@@ -26,18 +26,30 @@
 </header>
 <div class="content">
     <div class="box-container">
+        {% if upload_times %}
         <div class="box">
             <a href="upload-times.html">
                 <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Hochladen Icon" width="32" height="32">
                 Zeiten hochladen
             </a>
         </div>
+        {% endif %}
+        {% if manage_times %}
         <div class="box">
             <a href="manage-times.html">
                 <img src="{{ url_for('static', filename='assets/files.png') }}" alt="Dateien Icon" width="32" height="32">
                 Zeiten verwalten
             </a>
         </div>
+        {% endif %}
+        {% if authorizations %}
+        <div class="box">
+            <a href="authorizations.html">
+                <img src="{{ url_for('static', filename='assets/access.png') }}" alt="Hochladen Icon" width="32" height="32">
+                Berechtigungen zuweisen
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>

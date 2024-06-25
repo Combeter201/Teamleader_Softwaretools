@@ -8,25 +8,52 @@ from flask import Flask, render_template, request, send_from_directory, jsonify,
 from config import Config
 from utils.csv_utils import parse_csv, sort_and_group_by_date
 from utils.teamleader_utils import get_teamleader_token, get_teamleader_user, get_teamleader_teams, \
-    get_teamleader_user_info, get_teamleader_user_times, refresh_teamleader_token
+    get_teamleader_user_info, get_teamleader_user_times, refresh_teamleader_token, get_all_users
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY  # Setze einen geheimen Schlüssel für die Sitzungsverwaltung
 
 
 def handle_token_refresh():
+    username = session.get('username')
     try:
         refresh_teamleader_token(Config.CLIENT_ID, Config.CLIENT_SECRET, session.get('refresh_token'))
     except Exception as e:
         error_message = "Token ist abgelaufen. Melden Sie sich erneut an."
-        return render_template('error.html', error_message=error_message)
+        return render_template('error.html', error_message=error_message, username=username)
     return None
+
+
+def load_whitelist():
+    with open('static/data/whitelist.json', 'r') as f:
+        return json.load(f)
 
 
 @app.route('/')
 def home():
+    user_id = session.get('userId')
+    if user_id:
+        whitelist = load_whitelist()
+        user_permissions = next((user for user in whitelist if user['id'] == user_id), None)
+
+        if user_permissions:
+            return render_template('index.html',
+                                   username=user_permissions['name'],
+                                   upload_times=user_permissions['upload_times'],
+                                   manage_times=user_permissions['manage_times'],
+                                   authorizations=user_permissions['authorizations'])
+
+    return render_template('index.html')
+
+
+@app.route('/authorizations.html')
+def authorizations():
+
     username = session.get('username')
-    return render_template('index.html', username=username)
+    access_token = session.get('access_token')
+    user_list = get_all_users(access_token)
+
+    return render_template('authorizations.html', username=username, user_list=user_list)
 
 
 @app.route('/error.html')
@@ -102,7 +129,6 @@ def download_template():
 
 @app.route('/upload-times.html', methods=['GET', 'POST'])
 def upload():
-
     username = session.get('username')
     if 'csvFile' not in request.files:
         return render_template('upload-times.html', error_message='Keine Datei ausgewählt!', username=username)
@@ -236,11 +262,20 @@ def download_csv():
     # Speichere die CSV-Datei temporär auf dem Server
     csv_filename = 'static/data/Zeitübersicht.csv'  # Beispiel: Temporärer Pfad
 
-    with open(csv_filename, 'w') as f:
+    # Schreibe den Inhalt in die CSV-Datei mit newline=''
+    with open(csv_filename, 'w', newline='') as f:
         f.write(output.getvalue())
 
     # Sende die Datei als Download
     return send_from_directory(directory='static/data', path='Zeitübersicht.csv', as_attachment=True)
+
+# Dummy setup for session for testing purposes
+app.secret_key = 'supersecretkey'
+app.config['SESSION_TYPE'] = 'filesystem'
+
+if __name__ == '__main__':
+    # For the purpose of testing the route
+    app.run(debug=True)
 
 
 if __name__ == '__main__':

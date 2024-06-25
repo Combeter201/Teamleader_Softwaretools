@@ -40,8 +40,65 @@ def refresh_teamleader_token(client_id, client_secret, refresh_token):
     response = requests.post('https://app.teamleader.eu/oauth2/access_token', headers=headers, data=body)
     session['access_token'] = response.json()['access_token']
     session['refresh_token'] = response.json()['refresh_token']
-    print('Token erneuert')
     return response.json()
+
+
+def get_all_users(access_token):
+    try:
+        headers = {'Authorization': f'Bearer {access_token}'}
+        body = json.dumps({
+            "filter": {
+                "status": [
+                    "active"
+                ]
+            },
+            "sort": [
+                {
+                    "field": "first_name"
+                }
+            ],
+            "page": {
+                "size": 80,
+                "number": 1
+            }
+        })
+
+        response = requests.post('https://api.focus.teamleader.eu/users.list', headers=headers, data=body)
+        response.raise_for_status()
+
+        data = response.json()['data']
+
+        user_list = []
+        for user in data:
+            user_info = {
+                'employee': f'{user["first_name"]} {user["last_name"]}',
+                'id': user['id'],
+                'role': user['function']
+            }
+            user_list.append(user_info)
+
+        with open('static/data/whitelist.json', 'r') as f:
+            whitelist = json.load(f)
+
+        for user in user_list:
+            user_id = user['id']
+            # Suche nach dem Benutzer in der whitelist.json
+            for entry in whitelist:
+                if entry['id'] == user_id:
+                    # Füge die Berechtigungen zum Benutzer hinzu
+                    user['upload_times'] = entry.get('upload_times', 'false')
+                    user['manage_times'] = entry.get('manage_times', 'false')
+                    user['authorizations'] = entry.get('authorizations', 'false')
+                    break  # Wenn der Benutzer gefunden wurde, beende die Suche
+
+        return user_list
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching teams: {e}")
+        return None
+    except KeyError as e:
+        print(f"Error parsing JSON data: {e}")
+        return None
 
 
 def get_teamleader_user(access_token):
@@ -106,12 +163,11 @@ def get_teamleader_user_info(access_token, member_id):
         return None, None
 
 
-def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp, third_tmstmp, end_tmstmp,
-                              fourth_tmstmp):
+def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp, third_tmstmp, end_tmstmp, fourth_tmstmp=None):
     try:
         headers = {'Authorization': f'Bearer {access_token}'}
 
-        # Determine the time intervals based on fourth_tmstmp
+        # Bestimme die Zeitintervalle basierend auf fourth_tmstmp
         if fourth_tmstmp is None:
             time_intervals = [
                 {"started_after": first_tmstmp, "ended_before": second_tmstmp},
@@ -142,20 +198,18 @@ def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmst
             response.raise_for_status()
             data = response.json()
 
-            if 'data' in data and data['data']:  # Check if 'data' exists and is not empty
+            if 'data' in data and data['data']:  # Überprüfen, ob 'data' existiert und nicht leer ist
                 all_work_entries.extend(data['data'])
 
-        if all_work_entries:
-            total_duration = summarize_work_entries(all_work_entries)
-            return total_duration
-        else:
-            return summarize_work_entries([])
+        if not all_work_entries:  # Wenn all_work_entries leer ist, Fehler auslösen
+            raise ValueError("Keine Arbeitszeiten gefunden.")
+
+        total_duration = summarize_work_entries(all_work_entries)
+        return total_duration
 
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching user info: {e}")
         return None
     except (KeyError, ValueError) as e:
-        print(f"Error processing API response: {e}")
         return None
 
 

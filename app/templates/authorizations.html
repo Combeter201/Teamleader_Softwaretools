@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teamleader Softwaretools</title>
+    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/authorizations.css') }}">
+</head>
+<body onload="checkTableVisibility()">
+<header>
+    <div class="left-container">
+        <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="32" height="32">
+        <a href="."><h1>Teamleader Softwaretools</h1></a>
+    </div>
+    <div class="right-container">
+        {% if username %}
+            <span class="username">Willkommen, {{ username }}</span>
+        {% else %}
+            <button type="button" class="login-button" onclick="login()">
+                Anmelden
+            </button>
+        {% endif %}
+    </div>
+</header>
+<div class="content">
+    <div class="box-container">
+        <div class="box">
+            <div class="file-upload-container">
+                <button id="downloadButton" class="upload-button" onclick="downloadTemplate()">
+                    Mitarbeiter hinzufügen
+                </button>
+                <button id="uploadButton" class="upload-button" onclick="openModal()" disabled>
+                    <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Upload Icon">
+                </button>
+                <button type="button" class="clear-button" onclick="clearData()" disabled>
+                    <img src="{{ url_for('static', filename='assets/trashcan.png') }}" alt="Abfalleimer">
+                </button>
+            </div>
+        </div>
+        <div id="box">
+            {% if error_message %}
+            <p class="error-message">{{ error_message }}</p>
+            {% endif %}
+            {% if success_message %}
+            <p class="success-message">{{ success_message }}</p>
+            {% endif %}
+            <table>
+                <thead>
+                <tr>
+                    <th>Mitarbeiter</th>
+                    <th>Rolle</th>
+                    <th>Zeiten hochladen</th>
+                    <th>Zeiten verwalten</th>
+                    <th>Berechtigungen zuweisen</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in user_list %}
+                <tr>
+                    <td>{{ user.employee }}</td>
+                    <td>{{ user.role }}</td>
+                    <td><input type="checkbox" {% if user.upload_times %}checked{% endif %}></td>
+                    <td><input type="checkbox" {% if user.manage_times %}checked{% endif %}></td>
+                    <td><input type="checkbox" {% if user.authorizations %}checked{% endif %}></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+<script src="{{ url_for('static', filename='js/authorizations.js') }}"></script>
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+</html>
