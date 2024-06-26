@@ -1,0 +1,30 @@
+[
+  {
+    "type": "Betratung",
+    "id": "1626b394-869e-0d06-9c57-875bad91e576"
+  },
+    {
+    "type": "Entwicklung",
+    "id": "26c1ee6e-0553-01b1-9455-753aa291e575"
+  },
+    {
+    "type": "interne Tätigkeiten",
+    "id": "2358ccd5-cb8c-0eaf-9158-80acfaa25a01"
+  },
+    {
+    "type": "Reisezeit",
+    "id": "f471e22f-eeba-0b5c-8f56-95455d5259ff"
+  },
+    {
+    "type": "Zeiterfassung",
+    "id": "6e76d010-75c6-09c4-b55e-727a38e65c6b"
+  },
+    {
+    "type": "Besprechung",
+    "id": "-2"
+  },
+    {
+    "type": "Telefongespräch",
+    "id": "-3"
+  }
+]

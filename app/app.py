@@ -1,10 +1,12 @@
 import csv
+import datetime
 import io
 import json
 
 import requests
 from flask import Flask, render_template, request, send_from_directory, jsonify, redirect, session
 
+from utils.date_utils import calculate_total_hours
 from config import Config
 from utils.csv_utils import parse_csv, sort_and_group_by_date
 from utils.teamleader_utils import get_teamleader_token, get_teamleader_user, get_teamleader_teams, \
@@ -26,6 +28,11 @@ def handle_token_refresh():
 
 def load_whitelist():
     with open('static/data/whitelist.json', 'r') as f:
+        return json.load(f)
+
+
+def load_worktype():
+    with open('static/data/worktype.json', 'r') as f:
         return json.load(f)
 
 
@@ -158,6 +165,7 @@ def upload():
     if file and file.filename.endswith('.csv'):
         csv_content = file.stream.read().decode('utf-8')
         csv_data = parse_csv(csv_content)
+        session['csv_data'] = csv_data
 
         if csv_data is None:
             return render_template('upload-times.html', error_message='Fehler beim Parsen der CSV-Datei!',
@@ -219,26 +227,45 @@ def fetch_teamleader_data():
         return redirect(session.get('previous_url', '/'))
 
     headers = {'Authorization': f'Bearer {access_token}'}
-    body = json.dumps({
-        "work_type_id": "26c1ee6e-0553-01b1-9455-753aa291e575",
-        "started_at": "2024-06-26T10:00:00+02:00",
-        "duration": 3600,
-        "subject": {"type": "company", "id": "3adb83c6-3584-0a90-a564-a6b479e18040"},
-        "invoiceable": True,
-        "user_id": session.get('userId')
-    })
+    csv_data = session.get('csv_data', [])
 
-    try:
-        response = requests.post('https://api.focus.teamleader.eu/timeTracking.add', headers=headers, data=body)
-        response.raise_for_status()
-        if response.status_code == 201:
-            success_message = "Die Zeiten wurden erfolgreich hochgeladen!"
-            return render_template('upload-times.html', success_message=success_message)
-        else:
-            error_message = "Fehler beim Hochladen der Daten in Teamleader."
-            return render_template('upload-times.html', error_message=error_message)
-    except requests.exceptions.RequestException as e:
-        return render_template('upload-times.html', error_message=str(e))
+    for entry in csv_data:
+        datum = entry['Datum']
+        von = entry['Von']
+        bis = entry['Bis']
+        abrechenbar = entry['Abrechenbar'] == 'Ja'
+
+        # Datum und Zeit in das gewünschte Format konvertieren
+        date_time_str = f"{datum} {von}"
+        started_at = datetime.datetime.strptime(date_time_str, '%d.%m.%Y %H:%M').isoformat() + "+02:00"
+
+        # Dauer berechnen
+        duration_seconds = calculate_total_hours(von, bis) * 3600
+
+        worktype = load_worktype()
+        worktype_id = next((wktype for wktype in worktype if wktype['type'] == entry['Typ']), None)
+
+        body = {
+            "work_type_id": worktype_id['id'],
+            "started_at": started_at,
+            "duration": duration_seconds,
+            "subject": {"type": "company", "id": "3adb83c6-3584-0a90-a564-a6b479e18040"},
+            "invoiceable": abrechenbar,
+            "user_id": session.get('userId')
+        }
+
+        try:
+            response = requests.post('https://api.focus.teamleader.eu/timeTracking.add', headers=headers,
+                                     data=json.dumps(body))
+            response.raise_for_status()
+            if response.status_code != 201:
+                error_message = "Fehler beim Hochladen der Daten in Teamleader."
+                return render_template('upload-times.html', error_message=error_message)
+        except requests.exceptions.RequestException as e:
+            return render_template('upload-times.html', error_message=str(e))
+
+    success_message = "Die Zeiten wurden erfolgreich hochgeladen!"
+    return render_template('upload-times.html', success_message=success_message)
 
 
 @app.route('/clear-data', methods=['POST'])

@@ -63,7 +63,7 @@
                         disabled>
                     Bestätigen
                 </button>
-                {% if members_info %}
+                {% if members_info%}
                 <button class="download-button" onclick="downloadCSV()">
                     <img src="{{ url_for('static', filename='assets/download.png') }}" alt="Upload Icon">
                 </button>
@@ -107,6 +107,9 @@
                 {% endfor %}
                 </tbody>
             </table>
+        </div>
+        <div id="loader" class="{% if members_info %}loaded{% else %}loaded{% endif %}">
+            <span class="loader"></span>
         </div>
     </div>
 </div>

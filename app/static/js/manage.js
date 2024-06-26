@@ -20,8 +20,25 @@ function activateTeams() {
     }
 }
 
-
 function sendSelectedIdToPython() {
+    try {
+    const membersTable = document.getElementById('membersTable');
+    if (membersTable) {
+        membersTable.className = 'hidden';
+    }
+    } catch (error) {}
+
+    // Alle Buttons mit der Klasse "download-button" finden
+    const downloadButtons = document.querySelectorAll('button.download-button');
+
+    // Über alle gefundenen Buttons iterieren und sie deaktivieren
+    downloadButtons.forEach(button => {
+        button.disabled = true;
+    });
+
+    const loader = document.getElementById('loader');
+    loader.className = "loading";
+
     const teamSelect = document.getElementById('teamSelect');
     const selectedOption = teamSelect.options[teamSelect.selectedIndex];
     const selectedId = selectedOption.getAttribute('id');
