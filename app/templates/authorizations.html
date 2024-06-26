@@ -15,11 +15,11 @@
     </div>
     <div class="right-container">
         {% if username %}
-            <span class="username">Willkommen, {{ username }}</span>
+        <span class="username">Willkommen, {{ username }}</span>
         {% else %}
-            <button type="button" class="login-button" onclick="login()">
-                Anmelden
-            </button>
+        <button type="button" class="login-button" onclick="login()">
+            Anmelden
+        </button>
         {% endif %}
     </div>
 </header>
@@ -27,17 +27,19 @@
     <div class="box-container">
         <div class="box">
             <div class="file-upload-container">
-                <button id="downloadButton" class="upload-button" onclick="downloadTemplate()">
-                    Mitarbeiter hinzufügen
+                <input type="text" id="searchField" class="search-field" placeholder="Suche..." oninput="filterTable()">
+                <button class="add-button" onclick="openModal()" >
+                    <img src="{{ url_for('static', filename='assets/add-user.png') }}" alt="Upload Icon">
                 </button>
-                <button id="uploadButton" class="upload-button" onclick="openModal()" disabled>
-                    <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Upload Icon">
+                <button id="uploadButton" class="add-button" disabled>
+                    <img src="{{ url_for('static', filename='assets/save.png') }}" alt="Upload Icon">
                 </button>
-                <button type="button" class="clear-button" onclick="clearData()" disabled>
-                    <img src="{{ url_for('static', filename='assets/trashcan.png') }}" alt="Abfalleimer">
+                <button type="button" class="clear-button" onclick="clearSearch()" disabled>
+                    <img src="{{ url_for('static', filename='assets/reset.png') }}" alt="Abfalleimer">
                 </button>
             </div>
         </div>
+
         <div id="box">
             {% if error_message %}
             <p class="error-message">{{ error_message }}</p>
@@ -45,11 +47,11 @@
             {% if success_message %}
             <p class="success-message">{{ success_message }}</p>
             {% endif %}
-            <table>
+            <table id="userTable">
                 <thead>
                 <tr>
-                    <th>Mitarbeiter</th>
-                    <th>Rolle</th>
+                    <th class="employee-col">Mitarbeiter</th>
+                    <th class="role-col">Rolle</th>
                     <th>Zeiten hochladen</th>
                     <th>Zeiten verwalten</th>
                     <th>Berechtigungen zuweisen</th>
@@ -58,8 +60,8 @@
                 <tbody>
                 {% for user in user_list %}
                 <tr>
-                    <td>{{ user.employee }}</td>
-                    <td>{{ user.role }}</td>
+                    <td class="employee-col">{{ user.employee }}</td>
+                    <td class="role-col">{{ user.role }}</td>
                     <td><input type="checkbox" {% if user.upload_times %}checked{% endif %}></td>
                     <td><input type="checkbox" {% if user.manage_times %}checked{% endif %}></td>
                     <td><input type="checkbox" {% if user.authorizations %}checked{% endif %}></td>
@@ -69,7 +71,47 @@
             </table>
         </div>
     </div>
-
+</div>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Mitarbeiter hinzufügen</h2>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Rolle:</label>
+                    <input type="text" id="role" name="role" required>
+                </div>
+                <div class="form-group">
+                    <label>Berechtigungen:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="uploadTimes" name="permissions" value="uploadTimes">
+                            <p for="uploadTimes">Zeiten hochladen</p>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="manageTimes" name="permissions" value="manageTimes">
+                            <p for="manageTimes">Zeiten verwalten</p>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="assignPermissions" name="permissions" value="assignPermissions">
+                            <p for="assignPermissions">Berechtigungen zuweisen</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-buttons">
+            <button class="confirm-button">Bestätigen</button>
+            <button class="cancel-button" onclick="closeModal()">Abbrechen</button>
+        </div>
+    </div>
 </div>
 <script src="{{ url_for('static', filename='js/authorizations.js') }}"></script>
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>

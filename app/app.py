@@ -35,8 +35,10 @@ def home():
     if user_id:
         whitelist = load_whitelist()
         user_permissions = next((user for user in whitelist if user['id'] == user_id), None)
+        session['user_permissions'] = user_permissions
 
         if user_permissions:
+
             return render_template('index.html',
                                    username=user_permissions['name'],
                                    upload_times=user_permissions['upload_times'],
@@ -48,9 +50,17 @@ def home():
 
 @app.route('/authorizations.html')
 def authorizations():
+    error_redirect = handle_token_refresh()
+    if error_redirect:
+        return error_redirect
 
     username = session.get('username')
     access_token = session.get('access_token')
+
+    user_permissions = session.get('user_permissions', {})
+    if not user_permissions.get('authorizations', False):
+        return render_template('error.html', username=username)
+
     user_list = get_all_users(access_token)
 
     return render_template('authorizations.html', username=username, user_list=user_list)
@@ -65,12 +75,19 @@ def errror():
 @app.route('/upload-times.html')
 def zeiten_hochladen():
     username = session.get('username')
+    user_permissions = session.get('user_permissions', {})
+    if not user_permissions.get('upload_times', False):
+        return render_template('error.html', username=username)
+
     return render_template('upload-times.html', username=username)
 
 
 @app.route('/manage-times.html')
 def zeiten_verwalten():
     username = session.get('username')
+    user_permissions = session.get('user_permissions', {})
+    if not user_permissions.get('manage_times', False):
+        return render_template('error.html', username=username)
     return render_template('manage-times.html', username=username)
 
 
@@ -130,6 +147,7 @@ def download_template():
 @app.route('/upload-times.html', methods=['GET', 'POST'])
 def upload():
     username = session.get('username')
+
     if 'csvFile' not in request.files:
         return render_template('upload-times.html', error_message='Keine Datei ausgewählt!', username=username)
 
@@ -203,7 +221,7 @@ def fetch_teamleader_data():
     headers = {'Authorization': f'Bearer {access_token}'}
     body = json.dumps({
         "work_type_id": "26c1ee6e-0553-01b1-9455-753aa291e575",
-        "started_at": "2024-06-18T10:00:00+02:00",
+        "started_at": "2024-06-26T10:00:00+02:00",
         "duration": 3600,
         "subject": {"type": "company", "id": "3adb83c6-3584-0a90-a564-a6b479e18040"},
         "invoiceable": True,

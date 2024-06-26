@@ -142,6 +142,13 @@ th {
     background-color: #f2f2f2;
 }
 
+.employee-col {
+    width: 22%; /* Beispiel: Spalte für Mitarbeiter auf 25% Breite festlegen */
+}
+.role-col {
+    width: 30%; /* Beispiel: Spalte für Rolle auf 20% Breite festlegen */
+}
+
 /* File Upload Styles */
 .file-upload-container {
     display: flex;
@@ -173,7 +180,7 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* Button Styles */
-.upload-button {
+.add-button {
     background-color: #8794df;
     color: white;
     border: none;
@@ -184,11 +191,11 @@ input[type="file"]::file-selector-button:hover {
     display: flex; /* Initial versteckt */
 }
 
-.upload-button:hover {
+.add-button:hover {
     background-color: #7d89cd;
 }
 
-.upload-button img {
+.add-button img {
     filter: invert(100%);
     width: 25px;
     height: 25px;
@@ -230,12 +237,6 @@ input[type="file"]::file-selector-button:hover {
     margin-top: 20px;
 }
 
-/* custom.css */
-.total-hours {
-    color: #4abfc1;
-    font-weight: bold;
-}
-
 /* Stile für deaktivierte Buttons */
 button:disabled,
 button:disabled:hover {
@@ -246,22 +247,6 @@ button:disabled:hover {
 button:disabled img,
 button:disabled:hover img {
     filter: invert(60%); /* Bilder ebenfalls ausgegraut */
-}
-
-#starttime{
-    width: 65px;
-}
-
-#endtime {
-    width: 65px;
-}
-
-#type {
-    width: 180px;
-}
-
-#description{
-    width: 150px;
 }
 
 /* Checkbox Styles */
@@ -293,4 +278,132 @@ input[type="checkbox"]:disabled {
     background-color: #f0f0f0; /* Hintergrundfarbe, wenn deaktiviert */
     border-color: #ccc; /* Randfarbe, wenn deaktiviert */
     color: #ccc; /* Farbe des Häkchens, wenn deaktiviert */
+}
+
+/* Styles für das Suchfeld */
+.search-field {
+    outline: none;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 200px;
+    margin-right: 10px; /* Abstand zum nächsten Element */
+    color: #333;
+}
+
+.search-field::placeholder {
+    color: #aaa;
+}
+
+/* Modal Styling */
+.modal {
+    display: none; /* Versteckt standardmäßig das Modal */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4); /* Hintergrund dunkelgrau mit Transparenz */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%; /* Anpassung der Breite */
+    max-width: 400px; /* Maximale Breite begrenzen */
+    height: auto; /* Automatische Höhe je nach Inhalt */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-height: calc(100vh - 60px); /* Maximale Höhe begrenzen */
+    overflow-y: auto; /* Vertikales Scrollen bei Überlauf */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.close {
+    color: #aaa;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.modal-body {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input[type="text"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-item p{
+    margin: 0;
+}
+
+.checkbox-item label {
+    margin: 0;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.confirm-button, .cancel-button {
+    background-color: #8794df;
+    color: white;
+    border: none;
+    padding: 10px 20px; /* Anpassung des Paddings für bessere Klickbarkeit */
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-left: 10px; /* Abstand zwischen den Buttons */
+}
+
+.confirm-button:hover, .cancel-button:hover {
+    background-color: #7d89cd;
 }

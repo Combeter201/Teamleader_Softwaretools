@@ -25,6 +25,7 @@
     </div>
 </header>
 <div class="content">
+    {% if upload_times or manage_times or authorizations %}
     <div class="box-container">
         {% if upload_times %}
         <div class="box">
@@ -51,6 +52,14 @@
         </div>
         {% endif %}
     </div>
+    {% else %}
+    <div class="message-box">
+        <img src="{{ url_for('static', filename='assets/locked.webp') }}" alt="Error Image">
+        <button type="button" class="message-button" disabled>
+            Dir fehlen wohl die Berechtigungen um die Apps zu nutzen.
+        </button>
+    </div>
+    {% endif %}
 </div>
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>

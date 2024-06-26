@@ -126,3 +126,30 @@ a {
     font-size: 1.2em;
     color: #333;
 }
+
+.message-box {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    border-radius: 16px;
+    padding: 30px 25px;
+    background-color: #e0e0e0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);}
+}
+
+.message-box img{
+    width: 30rem;
+}
+
+.message-button {
+    background-color: #de8787;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+}
