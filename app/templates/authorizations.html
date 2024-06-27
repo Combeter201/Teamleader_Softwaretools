@@ -7,7 +7,7 @@
     <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/authorizations.css') }}">
 </head>
-<body onload="checkTableVisibility()">
+<body>
 <header>
     <div class="left-container">
         <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="32" height="32">
@@ -26,12 +26,12 @@
 <div class="content">
     <div class="box-container">
         <div class="box">
-            <div class="file-upload-container">
+            <div class="tools-container">
                 <input type="text" id="searchField" class="search-field" placeholder="Suche..." oninput="filterTable()">
-                <button class="add-button" onclick="openModal()" >
+                <button class="add-button" onclick="openModal()">
                     <img src="{{ url_for('static', filename='assets/add-user.png') }}" alt="Upload Icon">
                 </button>
-                <button id="uploadButton" class="add-button" disabled>
+                <button id="save-button" class="add-button" disabled onclick="saveChanges()">
                     <img src="{{ url_for('static', filename='assets/save.png') }}" alt="Upload Icon">
                 </button>
                 <button type="button" class="clear-button" onclick="clearSearch()" disabled>
@@ -52,12 +52,15 @@
                 <tr>
                     <th class="employee-col">Mitarbeiter</th>
                     <th class="role-col">Rolle</th>
-                    <th>        <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Timer Icon" width="32" height="32">
-</th>
-                    <th>        <img src="{{ url_for('static', filename='assets/files.png') }}" alt="Timer Icon" width="32" height="32">
-</th>
-                    <th>        <img src="{{ url_for('static', filename='assets/access.png') }}" alt="Timer Icon" width="32" height="32">
-</th>
+                    <th class="icon-column"><img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Timer Icon" width="32"
+                             height="32">
+                    </th>
+                    <th class="icon-column"><img src="{{ url_for('static', filename='assets/files.png') }}" alt="Timer Icon" width="32"
+                             height="32">
+                    </th>
+                    <th class="icon-column"><img src="{{ url_for('static', filename='assets/access.png') }}" alt="Timer Icon" width="32"
+                             height="32">
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
@@ -65,9 +68,9 @@
                 <tr>
                     <td class="employee-col">{{ user.employee }}</td>
                     <td class="role-col">{{ user.role }}</td>
-                    <td><input type="checkbox" {% if user.upload_times %}checked{% endif %}></td>
-                    <td><input type="checkbox" {% if user.manage_times %}checked{% endif %}></td>
-                    <td><input type="checkbox" {% if user.authorizations %}checked{% endif %}></td>
+                    <td class="icon-column"><input type="checkbox" data-employee="{{ user.employee }}" data-permission="upload_times" {% if user.upload_times %}checked{% endif %} onchange="changeAuthorizations()"></td>
+                    <td class="icon-column"><input type="checkbox" data-employee="{{ user.employee }}" data-permission="manage_times" {% if user.manage_times %}checked{% endif %} onchange="changeAuthorizations()"></td>
+                    <td class="icon-column"><input type="checkbox" data-employee="{{ user.employee }}" data-permission="authorizations" {% if user.authorizations %}checked{% endif %} onchange="changeAuthorizations()"></td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -116,6 +119,7 @@
         </div>
     </div>
 </div>
+<div id="message-container"></div>
 <script src="{{ url_for('static', filename='js/authorizations.js') }}"></script>
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>

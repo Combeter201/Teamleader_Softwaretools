@@ -1,21 +1,31 @@
-function openModal() {
-    var modal = document.getElementById('myModal');
-    modal.style.display = 'flex';
-}
+    let initialCheckboxValues = {};
 
-function closeModal() {
-    var modal = document.getElementById('myModal');
-    modal.style.display = 'none';
-}
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const checkboxes = document.querySelectorAll('#userTable input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            const key = `${checkbox.dataset.employee}-${checkbox.dataset.permission}`;
+            initialCheckboxValues[key] = checkbox.checked;
+        });
+    });
 
-function uploadTimes() {
-    clearData();
-    closeModal();
-    var csvContentDiv = document.getElementById('csvContent');
-    csvContentDiv.innerHTML = '<p class="success-message">Die Zeiten wurden erfolgreich hochgeladen!</p>';
-}
+    function openModal() {
+        var modal = document.getElementById('myModal');
+        modal.style.display = 'flex';
+    }
 
-function filterTable() {
+    function closeModal() {
+        var modal = document.getElementById('myModal');
+        modal.style.display = 'none';
+    }
+
+    function uploadTimes() {
+        clearData();
+        closeModal();
+        var csvContentDiv = document.getElementById('csvContent');
+        csvContentDiv.innerHTML = '<p class="success-message">Die Zeiten wurden erfolgreich hochgeladen!</p>';
+    }
+
+    function filterTable() {
         var input, filter, table, tr, td, i, txtValue;
         input = document.getElementById("searchField");
         filter = input.value.toUpperCase();
@@ -39,3 +49,67 @@ function filterTable() {
         document.getElementById("searchField").value = "";
         filterTable(); // Tabelle zurücksetzen, um alle Einträge anzuzeigen
     }
+
+    function changeAuthorizations() {
+        const saveButton = document.getElementById("save-button");
+        saveButton.disabled = false;
+    }
+
+function saveChanges() {
+    const checkboxes = document.querySelectorAll('#userTable input[type="checkbox"]');
+    let changes = {};
+
+    checkboxes.forEach(checkbox => {
+        const employee = checkbox.dataset.employee;
+        const permission = checkbox.dataset.permission;
+        const key = `${employee}-${permission}`;
+        if (checkbox.checked !== initialCheckboxValues[key]) {
+            if (!changes[employee]) {
+                changes[employee] = {};
+            }
+            changes[employee][permission] = checkbox.checked;
+        }
+    });
+
+    fetch('/save_changes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(changes),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showMessage('Änderungen erfolgreich gespeichert', 'success');
+            initialCheckboxValues = {}; // Reset initial values
+            checkboxes.forEach(checkbox => {
+                const key = `${checkbox.dataset.employee}-${checkbox.dataset.permission}`;
+                initialCheckboxValues[key] = checkbox.checked;
+            });
+            document.getElementById("save-button").disabled = true;
+        } else {
+            showMessage('Fehler beim Speichern der Änderungen: ' + data.message, 'error');
+        }
+    })
+    .catch((error) => {
+        showMessage('Ein Fehler ist aufgetreten: ' + error, 'error');
+        console.error('Error:', error);
+    });
+}
+
+function showMessage(message, type) {
+    const messageContainer = document.getElementById('message-container');
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${type}-message show`;
+    messageElement.innerText = message;
+    messageContainer.appendChild(messageElement);
+
+    // Nach 3 Sekunden die Nachricht ausblenden
+    setTimeout(() => {
+        messageElement.classList.remove('show');
+        setTimeout(() => {
+            messageContainer.removeChild(messageElement);
+        }, 500); // Extra Zeit für das Ausblenden
+    }, 2000);
+}

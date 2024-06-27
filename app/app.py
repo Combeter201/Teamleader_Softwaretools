@@ -45,7 +45,6 @@ def home():
         session['user_permissions'] = user_permissions
 
         if user_permissions:
-
             return render_template('index.html',
                                    username=user_permissions['name'],
                                    upload_times=user_permissions['upload_times'],
@@ -314,6 +313,30 @@ def download_csv():
     # Sende die Datei als Download
     return send_from_directory(directory='static/data', path='Zeitübersicht.csv', as_attachment=True)
 
+
+@app.route('/save_changes', methods=['POST'])
+def save_changes():
+    changes = request.get_json()
+    try:
+        with open('static/data/whitelist.json', 'r') as file:
+            data = json.load(file)
+
+        for user in data:
+            employee = user['name']
+            if employee in changes:
+                for permission, value in changes[employee].items():
+                    if permission in user:
+                        user[permission] = value
+
+        with open('static/data/whitelist.json', 'w') as file:
+            json.dump(data, file, indent=4)
+
+        return jsonify({'status': 'success'})
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+
 # Dummy setup for session for testing purposes
 app.secret_key = 'supersecretkey'
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -321,7 +344,6 @@ app.config['SESSION_TYPE'] = 'filesystem'
 if __name__ == '__main__':
     # For the purpose of testing the route
     app.run(debug=True)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
