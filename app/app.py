@@ -165,13 +165,13 @@ def upload():
         csv_content = file.stream.read().decode('utf-8')
         csv_data = parse_csv(csv_content)
         session['csv_data'] = csv_data
+        print(csv_data)
 
         if csv_data is None:
             return render_template('upload-times.html', error_message='Fehler beim Parsen der CSV-Datei!',
                                    username=username)
 
         sorted_data = sort_and_group_by_date(csv_data)
-        session['csv_data_storage'] = sorted_data  # Speichern der Daten in der Sitzung
         return render_template('upload-times.html', sorted_data=sorted_data, username=username)
 
     return render_template('upload-times.html', error_message='Ungültiger Dateityp!', username=username)
@@ -227,12 +227,14 @@ def fetch_teamleader_data():
 
     headers = {'Authorization': f'Bearer {access_token}'}
     csv_data = session.get('csv_data', [])
+    print(csv_data)
 
     for entry in csv_data:
         datum = entry['Datum']
         von = entry['Von']
         bis = entry['Bis']
         abrechenbar = entry['Abrechenbar'] == 'Ja'
+        description = entry['Beschreibung']
 
         # Datum und Zeit in das gewünschte Format konvertieren
         date_time_str = f"{datum} {von}"
@@ -248,7 +250,8 @@ def fetch_teamleader_data():
             "work_type_id": worktype_id['id'],
             "started_at": started_at,
             "duration": duration_seconds,
-            "subject": {"type": "company", "id": "3adb83c6-3584-0a90-a564-a6b479e18040"},
+            "description": description,
+            "subject": {"type": "milestone", "id": "f1c99a2a-f80b-0bea-8e6f-d07c939f8986"},
             "invoiceable": abrechenbar,
             "user_id": session.get('userId')
         }
@@ -269,7 +272,7 @@ def fetch_teamleader_data():
 
 @app.route('/clear-data', methods=['POST'])
 def clear_data():
-    session.pop('csv_data_storage', None)  # Löschen der gespeicherten CSV-Daten aus der Sitzung
+    session.pop('csv_data', None)  # Löschen der gespeicherten CSV-Daten aus der Sitzung
     return jsonify({'status': 'success', 'message': 'Daten erfolgreich gelöscht'})
 
 
@@ -318,7 +321,7 @@ def download_csv():
 def save_changes():
     changes = request.get_json()
     try:
-        with open('static/data/whitelist.json', 'r') as file:
+        with open('static/data/whitelist.json', 'r', encoding='utf-8') as file:
             data = json.load(file)
 
         for user in data:
@@ -328,8 +331,8 @@ def save_changes():
                     if permission in user:
                         user[permission] = value
 
-        with open('static/data/whitelist.json', 'w') as file:
-            json.dump(data, file, indent=4)
+        with open('static/data/whitelist.json', 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
 
         return jsonify({'status': 'success'})
 
@@ -340,10 +343,6 @@ def save_changes():
 # Dummy setup for session for testing purposes
 app.secret_key = 'supersecretkey'
 app.config['SESSION_TYPE'] = 'filesystem'
-
-if __name__ == '__main__':
-    # For the purpose of testing the route
-    app.run(debug=True)
 
 if __name__ == '__main__':
     app.run(debug=True)

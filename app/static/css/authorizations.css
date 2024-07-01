@@ -375,7 +375,7 @@ input[type="checkbox"]:disabled {
 	font-weight: bold;
 }
 
-.form-group input[type="text"] {
+.form-group input[type="search"] {
 	width: calc(100% - 22px);
 	padding: 10px;
 	border: 1px solid #ccc;
