@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 import requests
 from urllib.parse import urlencode
@@ -88,6 +89,7 @@ def get_all_users(access_token):
                     # Füge die Berechtigungen zum Benutzer hinzu
                     user['upload_times'] = entry.get('upload_times', 'false')
                     user['manage_times'] = entry.get('manage_times', 'false')
+                    user['absence'] = entry.get('absence', 'false')
                     user['authorizations'] = entry.get('authorizations', 'false')
                     break  # Wenn der Benutzer gefunden wurde, beende die Suche
 
@@ -113,16 +115,100 @@ def get_teamleader_user(access_token):
     }
 
 
+def get_user_absence(access_token, userId, startDate, endDate, week=None, week_dates=None):
+    headers = {'Authorization': f'Bearer {access_token}'}
+    body = json.dumps({
+        "id": userId,
+        "filter": {
+            "starts_after": startDate.isoformat(),
+            "ends_before": endDate.isoformat()
+        }
+    })
+
+    try:
+        response = requests.post('https://api.focus.teamleader.eu/users.listDaysOff', headers=headers, data=body)
+        response.raise_for_status()  # Raise exception for HTTP errors (4xx or 5xx)
+
+        data = response.json()
+        absence_info = []
+
+        if week and week_dates:
+            # Load day_off_type.json
+            with open('static/data/day_off_type.json', 'r') as f:
+                day_off_types = json.load(f)
+
+            # Create a dictionary for quick lookup of day off types
+            day_off_type_dict = {item['id']: item['type'] for item in day_off_types}
+
+            for date_str in week_dates:
+                date_obj = datetime.strptime(date_str, '%d.%m.%Y').date()
+                entry_found = False
+
+                if 'data' in data and len(data['data']) > 0:
+                    for entry in data['data']:
+                        entry_date = datetime.strptime(entry['starts_at'], '%Y-%m-%dT%H:%M:%S%z').date()
+                        if entry_date == date_obj:
+                            leave_type_id = entry['leave_type']['id']
+                            absence_info.append(day_off_type_dict.get(leave_type_id, 'Office'))
+                            entry_found = True
+                            break
+
+                if not entry_found:
+                    absence_info.append('Office')
+
+            return absence_info
+        else:
+            if 'data' in data and len(data['data']) > 0:
+                leave_type_id = data['data'][0]['leave_type']['id']
+
+                # Load day_off_type.json
+                with open('static/data/day_off_type.json', 'r') as f:
+                    day_off_types = json.load(f)
+
+                # Find matching type
+                for day_off_type in day_off_types:
+                    if day_off_type['id'] == leave_type_id:
+                        absence_info.append(day_off_type['type'])
+                        return absence_info
+
+                # If no match found, return default type
+                absence_info.append('Office')
+                return absence_info
+            else:
+                # If response is empty or does not contain 'data'
+                absence_info.append('Office')
+                return absence_info
+    except requests.exceptions.RequestException as e:
+        # Handle HTTP errors
+        if week:
+            return ['Office', 'Office', 'Office', 'Office', 'Office']
+        else:
+            return ['Office']
+
+    except Exception as ex:
+        # Handle other unexpected errors
+        if week:
+            return ['Office', 'Office', 'Office', 'Office', 'Office']
+        else:
+            return ['Office']
+
+
 def get_teamleader_teams(access_token, team_id):
     try:
         headers = {'Authorization': f'Bearer {access_token}'}
-        body = json.dumps({
-            "filter": {
-                "ids": [
-                    team_id
-                ]
-            }
-        })
+        if team_id == "-1":
+            body = json.dumps({
+                "filter": {
+                }
+            })
+        else:
+            body = json.dumps({
+                "filter": {
+                    "ids": [
+                        team_id
+                    ]
+                }
+            })
 
         response = requests.post('https://api.focus.teamleader.eu/teams.list', headers=headers, data=body)
         response.raise_for_status()
@@ -163,7 +249,8 @@ def get_teamleader_user_info(access_token, member_id):
         return None, None
 
 
-def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp, third_tmstmp, end_tmstmp, fourth_tmstmp=None):
+def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp, third_tmstmp, end_tmstmp,
+                              fourth_tmstmp=None):
     try:
         headers = {'Authorization': f'Bearer {access_token}'}
 

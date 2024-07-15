@@ -105,8 +105,24 @@ a {
     text-decoration: none;
 }
 
+.logout-button {
+    background-color: #de8787;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex;
+    margin-right: 1rem;
+}
+
+.logout-button:hover {
+    background-color: #d47c75;
+}
+
 .login-button {
-    background-color: #8794df;
+    background-color: #87dfb9;
     color: white;
     border: none;
     padding: 10px 10px;
@@ -118,7 +134,7 @@ a {
 }
 
 .login-button:hover {
-    background-color: #7d89cd;
+    background-color: #7dd4a7;
 }
 
 .username {

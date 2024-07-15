@@ -11,7 +11,13 @@ function redirectToTeamleader() {
 }
 
 function uploadtoTeamleader() {
-        window.location.href = '/upload-to-teamleader'; // Hier leitest du zur Autorisierungsseite weiter
+        const confirmButton = document.getElementById('confirm-btn');
+        confirmButton.disabled = true;
+        const cancelButton = document.getElementById('cancel-btn');
+        cancelButton.disabled = true;
+        const loader = document.getElementById('loader');
+        loader.className = "loading";
+        window.location.href = '/upload-to-teamleader';
 }
 
 function clearData() {

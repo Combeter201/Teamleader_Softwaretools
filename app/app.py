@@ -1,19 +1,24 @@
 import csv
-import datetime
 import io
 import json
+import locale
+import os
+import tempfile
+import time
 
 import requests
 from flask import Flask, render_template, request, send_from_directory, jsonify, redirect, session
 
+from datetime import datetime, date, timedelta
 from utils.date_utils import calculate_total_hours
 from config import Config
 from utils.csv_utils import parse_csv, sort_and_group_by_date
 from utils.teamleader_utils import get_teamleader_token, get_teamleader_user, get_teamleader_teams, \
-    get_teamleader_user_info, get_teamleader_user_times, refresh_teamleader_token, get_all_users
+    get_teamleader_user_info, get_teamleader_user_times, refresh_teamleader_token, get_all_users, get_user_absence
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY  # Setze einen geheimen Schlüssel für die Sitzungsverwaltung
+locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
 
 
 def handle_token_refresh():
@@ -49,6 +54,7 @@ def home():
                                    username=user_permissions['name'],
                                    upload_times=user_permissions['upload_times'],
                                    manage_times=user_permissions['manage_times'],
+                                   absence=user_permissions['absence'],
                                    authorizations=user_permissions['authorizations'])
 
     return render_template('index.html')
@@ -76,6 +82,122 @@ def authorizations():
 def errror():
     username = session.get('username')
     return render_template('error.html', username=username)
+
+
+@app.route('/absence.html', methods=['POST', 'GET'])
+def absence():
+    access_token = session.get('access_token')
+    username = session.get('username')
+    userId = session.get('userId')
+    outputType = 'date'
+    week_dates = []
+    selected_date = ''
+
+    try:
+        request_data = request.get_json()
+        inputType = request_data.get('inputType')
+        outputType = inputType
+        date_param = request_data.get('date')
+
+        if inputType == 'date':
+            date_requested = datetime.strptime(date_param, "%Y-%m-%d").date()
+            startDate = date_requested - timedelta(days=1)
+            endDate = date_requested + timedelta(days=1)
+        elif inputType == 'week':
+            selected_date = date_param
+            year, week = date_param.split('-W')
+            date_requested = datetime.strptime(f'{year}-W{week}-1', "%Y-W%W-%w").date()
+            startDate = date_requested - timedelta(days=date_requested.weekday())
+            endDate = startDate + timedelta(days=5)
+
+            week_dates.clear()
+            for i in range(5):  # Montag bis Freitag
+                day = startDate + timedelta(days=i)
+                formatted_day = day.strftime("%d.%m.%Y")
+                week_dates.append(formatted_day)
+
+        else:
+            raise ValueError("Invalid inputType")
+
+    except Exception as e:
+        date_requested = datetime.today().date()
+        week_dates.clear()
+        week_dates.append(date_requested.strftime("%d.%m.%Y"))
+        startDate = date_requested - timedelta(days=1)
+        endDate = date_requested + timedelta(days=1)
+
+    # Loading whitelist data from whitelist.json
+    with open('static/data/whitelist.json', 'r', encoding='utf-8') as f:
+        whitelist = json.load(f)
+
+    # Searching whitelist for userId and determining team_id
+    team_id = None
+    for user_info in whitelist:
+        if user_info["id"] == userId:
+            team_id = user_info["team_id"]
+            break
+
+    if not team_id:
+        return "Unauthorized", 401
+
+    # Calling function to retrieve team leader's teams
+    response = get_teamleader_teams(access_token, team_id)
+
+    # Extracting member IDs from the response
+    try:
+        ids = [member["id"] for team in response for member in team["members"]]
+    except Exception as e:
+        error_message = f"Dein Token ist abgelaufen, melde dich erneut an um den Token zu erneuern"
+        return render_template('absence.html', error_message=error_message, username=username)
+
+    # Prepare list for absences
+    absences_list = []
+
+    # Fetch absences for authorized users based on whitelist
+    for user_info in whitelist:
+        if user_info["id"] in ids:
+            # Finding user's name
+            for team in response:
+                for member in team["members"]:
+                    if member["id"] == user_info["id"]:
+                        name = user_info['name']
+                        break
+                else:
+                    continue
+                break
+            else:
+                name = "Unknown"
+
+            if outputType == 'date':
+                absence_info = get_user_absence(access_token, user_info["id"], startDate, endDate)
+                absences_list.append({
+                    "name": name,
+                    "absence": absence_info  # Assuming get_user_absence returns absence information
+                })
+            elif outputType == 'week':
+                absence_info = get_user_absence(access_token, user_info["id"], startDate - timedelta(days=1), endDate,
+                                                True, week_dates)
+                # Check if the user is already in the absences_list
+                user_found = False
+                for entry in absences_list:
+                    if entry["name"] == name:
+                        entry["absence"] = absence_info
+                        user_found = True
+                        break
+                if not user_found:
+                    absences_list.append({
+                        "name": name,
+                        "absence": absence_info  # Start a new list with the first absence info
+                    })
+
+    if outputType == 'date':
+        selected_date = date_requested.strftime("%Y-%m-%d")
+
+    day_of_week = date_requested.strftime("%A")
+
+    # Rendering the 'absence.html' template and passing data
+    return render_template('absence.html', username=username, absences=absences_list,
+                           today=selected_date, view=outputType, day=day_of_week, date=week_dates)
 
 
 @app.route('/upload-times.html')
@@ -139,7 +261,8 @@ def get_teams():
 
             except Exception as e:
                 error_message = f"Dir fehlen die Berechtigung, um dieses Team anzuschauen"
-                return render_template('manage-times.html', error_message=error_message, username=username)
+                return render_template('manage-times.html', error_message=error_message,
+                                       username=username)
 
     session['members_info'] = members_info
     return render_template('manage-times.html', members_info=members_info, username=username)
@@ -152,6 +275,7 @@ def download_template():
 
 @app.route('/upload-times.html', methods=['GET', 'POST'])
 def upload():
+    temp_dir = tempfile.gettempdir()
     username = session.get('username')
 
     if 'csvFile' not in request.files:
@@ -164,12 +288,19 @@ def upload():
     if file and file.filename.endswith('.csv'):
         csv_content = file.stream.read().decode('utf-8')
         csv_data = parse_csv(csv_content)
-        session['csv_data'] = csv_data
-        print(csv_data)
-
+        temp_csv_path = os.path.join(temp_dir, 'temp_upload.csv')
         if csv_data is None:
             return render_template('upload-times.html', error_message='Fehler beim Parsen der CSV-Datei!',
                                    username=username)
+
+        try:
+            with open(temp_csv_path, 'w', newline='') as f:
+                writer = csv.writer(f, delimiter=';')
+                writer.writerow(list(csv_data[0].keys()))  # Schreibe die Kopfzeile in die CSV-Datei
+                for row in csv_data:
+                    writer.writerow(list(row.values()))  # Schreibe die Datenzeilen in die CSV-Datei
+        except Exception as e:
+            return render_template('upload-times.html', error_message=str(e), username=username)
 
         sorted_data = sort_and_group_by_date(csv_data)
         return render_template('upload-times.html', sorted_data=sorted_data, username=username)
@@ -182,6 +313,13 @@ def authorize_teamleader():
     session['previous_url'] = request.referrer or '/'
     auth_url = get_teamleader_token(Config.CLIENT_ID, Config.REDIRECT_URI)
     return redirect(auth_url)
+
+
+@app.route('/logout')
+def logout_teamleader():
+    session.clear()
+    time.sleep(1)
+    return redirect('/')
 
 
 @app.route('/oauth/callback')
@@ -217,6 +355,14 @@ def login():
 
 @app.route('/upload-to-teamleader')
 def fetch_teamleader_data():
+    username = session.get('username')
+    temp_dir = tempfile.gettempdir()
+    temp_csv_path = os.path.join(temp_dir, 'temp_upload.csv')
+    # Lade Daten aus der temporären CSV-Datei
+    with open(temp_csv_path, 'r', newline='') as f:
+        reader = csv.DictReader(f, delimiter=';')
+        csv_data = list(reader)
+
     error_redirect = handle_token_refresh()
     if error_redirect:
         return error_redirect
@@ -226,8 +372,6 @@ def fetch_teamleader_data():
         return redirect(session.get('previous_url', '/'))
 
     headers = {'Authorization': f'Bearer {access_token}'}
-    csv_data = session.get('csv_data', [])
-    print(csv_data)
 
     for entry in csv_data:
         datum = entry['Datum']
@@ -238,7 +382,7 @@ def fetch_teamleader_data():
 
         # Datum und Zeit in das gewünschte Format konvertieren
         date_time_str = f"{datum} {von}"
-        started_at = datetime.datetime.strptime(date_time_str, '%d.%m.%Y %H:%M').isoformat() + "+02:00"
+        started_at = datetime.strptime(date_time_str, '%d.%m.%Y %H:%M').isoformat() + "+02:00"
 
         # Dauer berechnen
         duration_seconds = calculate_total_hours(von, bis) * 3600
@@ -251,7 +395,7 @@ def fetch_teamleader_data():
             "started_at": started_at,
             "duration": duration_seconds,
             "description": description,
-            "subject": {"type": "milestone", "id": "f1c99a2a-f80b-0bea-8e6f-d07c939f8986"},
+            "subject": worktype_id['subject'],
             "invoiceable": abrechenbar,
             "user_id": session.get('userId')
         }
@@ -262,17 +406,22 @@ def fetch_teamleader_data():
             response.raise_for_status()
             if response.status_code != 201:
                 error_message = "Fehler beim Hochladen der Daten in Teamleader."
-                return render_template('upload-times.html', error_message=error_message)
+                return render_template('upload-times.html', error_message=error_message, username=username)
         except requests.exceptions.RequestException as e:
-            return render_template('upload-times.html', error_message=str(e))
+            return render_template('upload-times.html', error_message=str(e), username=username)
 
     success_message = "Die Zeiten wurden erfolgreich hochgeladen!"
-    return render_template('upload-times.html', success_message=success_message)
+    return render_template('upload-times.html', success_message=success_message, username=username)
 
 
 @app.route('/clear-data', methods=['POST'])
 def clear_data():
-    session.pop('csv_data', None)  # Löschen der gespeicherten CSV-Daten aus der Sitzung
+    temp_dir = tempfile.gettempdir()
+    # Routenfunktion zum Löschen der temporären CSV-Daten
+    temp_csv_path = os.path.join(temp_dir, 'temp_upload.csv')
+    if os.path.exists(temp_csv_path):
+        os.remove(temp_csv_path)
+
     return jsonify({'status': 'success', 'message': 'Daten erfolgreich gelöscht'})
 
 

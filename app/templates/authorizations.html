@@ -16,6 +16,9 @@
     <div class="right-container">
         {% if username %}
         <span class="username">Willkommen, {{ username }}</span>
+        <button type="button" class="logout-button" onclick="logout()">
+            Abmelden
+        </button>
         {% else %}
         <button type="button" class="login-button" onclick="login()">
             Anmelden
@@ -28,9 +31,6 @@
         <div class="box">
             <div class="tools-container">
                 <input type="search" id="searchField" class="search-field" placeholder="Suche..." oninput="filterTable()">
-                <button class="add-button" onclick="openModal()">
-                    <img src="{{ url_for('static', filename='assets/add-user.png') }}" alt="Upload Icon">
-                </button>
                 <button id="save-button" class="add-button" disabled onclick="saveChanges()">
                     <img src="{{ url_for('static', filename='assets/save.png') }}" alt="Upload Icon">
                 </button>
@@ -58,7 +58,10 @@
                     <th class="icon-column"><img src="{{ url_for('static', filename='assets/files.png') }}" alt="Timer Icon" width="32"
                              height="32">
                     </th>
-                    <th class="icon-column"><img src="{{ url_for('static', filename='assets/access.png') }}" alt="Timer Icon" width="32"
+                    <th class="icon-column"><img src="{{ url_for('static', filename='assets/absence.png') }}" alt="Timer Icon" width="32"
+                             height="32">
+                    </th>
+                    <th class="icon-column"><img src="{{ url_for('static', filename='assets/easy-access.png') }}" alt="Timer Icon" width="32"
                              height="32">
                     </th>
                 </tr>
@@ -70,6 +73,7 @@
                     <td class="role-col">{{ user.role }}</td>
                     <td class="icon-column"><input type="checkbox" data-employee="{{ user.employee }}" data-permission="upload_times" {% if user.upload_times %}checked{% endif %} onchange="changeAuthorizations()"></td>
                     <td class="icon-column"><input type="checkbox" data-employee="{{ user.employee }}" data-permission="manage_times" {% if user.manage_times %}checked{% endif %} onchange="changeAuthorizations()"></td>
+                    <td class="icon-column"><input type="checkbox" data-employee="{{ user.employee }}" data-permission="absence" {% if user.absence %}checked{% endif %} onchange="changeAuthorizations()"></td>
                     <td class="icon-column"><input type="checkbox" data-employee="{{ user.employee }}" data-permission="authorizations" {% if user.authorizations %}checked{% endif %} onchange="changeAuthorizations()"></td>
                 </tr>
                 {% endfor %}
@@ -104,6 +108,10 @@
                         <div class="checkbox-item">
                             <input type="checkbox" id="manageTimes" name="permissions" value="manageTimes">
                             <p for="manageTimes">Zeiten verwalten</p>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="absence" name="permissions" value="absence">
+                            <p for="absence">Abwesenheiten einsehen</p>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="assignPermissions" name="permissions" value="assignPermissions">

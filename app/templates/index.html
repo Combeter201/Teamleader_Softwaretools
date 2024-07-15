@@ -17,6 +17,9 @@
     <div class="right-container">
         {% if username %}
         <span class="username">Willkommen, {{ username }}</span>
+        <button type="button" class="logout-button" onclick="logout()">
+            Abmelden
+        </button>
         {% else %}
         <button type="button" class="login-button" onclick="login()">
             Anmelden
@@ -43,10 +46,18 @@
             </a>
         </div>
         {% endif %}
+        {% if absence %}
+        <div class="box">
+            <a href="absence.html">
+                <img src="{{ url_for('static', filename='assets/absence.png') }}" alt="Hochladen Icon" width="32" height="32">
+                Abwesenheiten einsehen
+            </a>
+        </div>
+        {% endif %}
         {% if authorizations %}
         <div class="box">
             <a href="authorizations.html">
-                <img src="{{ url_for('static', filename='assets/access.png') }}" alt="Hochladen Icon" width="32" height="32">
+                <img src="{{ url_for('static', filename='assets/easy-access.png') }}" alt="Hochladen Icon" width="32" height="32">
                 Berechtigungen zuweisen
             </a>
         </div>
@@ -54,10 +65,15 @@
     </div>
     {% else %}
     <div class="message-box">
-        <img src="{{ url_for('static', filename='assets/locked.webp') }}" alt="Error Image">
+        {% if username %}
         <button type="button" class="message-button" disabled>
             Dir fehlen wohl die Berechtigungen um die Apps zu nutzen.
         </button>
+        {% else %}
+        <button type="button" class="message-button" disabled>
+            Melde dich an, um die Apps nutzen zu können.
+        </button>
+        {% endif %}
     </div>
     {% endif %}
 </div>

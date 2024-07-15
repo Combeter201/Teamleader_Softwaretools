@@ -15,11 +15,14 @@
     </div>
     <div class="right-container">
         {% if username %}
-            <span class="username">Willkommen, {{ username }}</span>
+        <span class="username">Willkommen, {{ username }}</span>
+        <button type="button" class="logout-button" onclick="logout()">
+            Abmelden
+        </button>
         {% else %}
-            <button type="button" class="login-button" onclick="login()">
-                Anmelden
-            </button>
+        <button type="button" class="login-button" onclick="login()">
+            Anmelden
+        </button>
         {% endif %}
     </div>
 </header>
@@ -94,9 +97,12 @@
             <h2>Zeiten in Teamleader übertragen?</h2>
             <span class="close" onclick="closeModal()">&times;</span>
         </div>
+        <div id="loader" class="{% if not success_message %}loaded{% else %}loaded{% endif %}">
+            <span class="loader"></span>
+        </div>
         <div class="modal-buttons">
-            <button class="confirm-button" onclick="uploadtoTeamleader()">Bestätigen</button>
-            <button class="cancel-button" onclick="closeModal()">Abbrechen</button>
+            <button class="confirm-button" id="confirm-btn" onclick="uploadtoTeamleader()">Bestätigen</button>
+            <button class="cancel-button" id="cancel-btn" onclick="closeModal()">Abbrechen</button>
         </div>
     </div>
 </div>

@@ -17,6 +17,9 @@
     <div class="right-container">
         {% if username %}
         <span class="username">Willkommen, {{ username }}</span>
+        <button type="button" class="logout-button" onclick="logout()">
+            Abmelden
+        </button>
         {% else %}
         <button type="button" class="login-button" onclick="login()">
             Anmelden
@@ -30,6 +33,11 @@
             <div class="teamleader-users-container">
                 <select id="teamSelect" class="teams" onchange="activateTeams()">
                     <option disabled selected hidden>Team auswählen</option>
+                    {% if username == "Anja Rausch" %}
+                    <optgroup label="Mitarbeiter">
+                        <option value="option14" id="-1">Alle Mitarbeiter</option>
+                    </optgroup>
+                    {% endif %}
                     <optgroup label="GF">
                         <option value="option1" id="a935254e-b5ce-0a6c-8558-916bd4f2bfba">René Ott</option>
                         <option value="option2" id="e0eda744-94d3-0803-9d5f-de2700b2bfb8">Daniel Rösch</option>

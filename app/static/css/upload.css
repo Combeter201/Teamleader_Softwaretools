@@ -55,8 +55,24 @@ header .right-container {
     color: #333;
 }
 
+.logout-button {
+    background-color: #de8787;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex;
+    margin-right: 1rem;
+}
+
+.logout-button:hover {
+    background-color: #d47c75;
+}
+
 .login-button {
-    background-color: #8794df;
+    background-color: #87dfb9;
     color: white;
     border: none;
     padding: 10px 10px;
@@ -68,7 +84,7 @@ header .right-container {
 }
 
 .login-button:hover {
-    background-color: #7d89cd;
+    background-color: #7dd4a7;
 }
 
 /* Content Styles */
@@ -257,7 +273,6 @@ input[type="file"]::file-selector-button:hover {
     width: 60%; /* Anpassung der Breite */
     max-width: 400px; /* Maximale Breite begrenzen */
     height: auto; /* Automatische Höhe je nach Inhalt */
-    max-height: 100px; /* Maximale Höhe begrenzen */
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -328,4 +343,46 @@ button:disabled:hover img {
 
 #description{
     width: 150px;
+}
+
+
+.loading {
+    display: flex;
+    justify-content: center;
+    margin: 15px auto 25px;
+}
+
+.loaded {
+    display: flex;
+    justify-content: center;
+    visibility: hidden;
+    margin: 15px 0 25px;
+}
+
+.loader {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto;
+  position: relative;
+  background: #FFF;
+  box-shadow: -24px 0 #FFF, 24px 0 #FFF;
+  box-sizing: border-box;
+  animation: shadowPulse 2s linear infinite;
+}
+
+@keyframes shadowPulse {
+  33% {
+    background: #FFF;
+    box-shadow: -24px 0 #8794df, 24px 0 #FFF;
+  }
+  66% {
+    background: #8794df;
+    box-shadow: -24px 0 #FFF, 24px 0 #FFF;
+  }
+  100% {
+    background: #FFF;
+    box-shadow: -24px 0 #FFF, 24px 0 #8794df;
+  }
 }

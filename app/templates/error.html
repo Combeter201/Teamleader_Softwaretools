@@ -18,6 +18,9 @@
     <div class="right-container">
         {% if username %}
         <span class="username">Willkommen, {{ username }}</span>
+        <button type="button" class="logout-button" onclick="logout()">
+            Abmelden
+        </button>
         {% else %}
         <button type="button" class="login-button" onclick="login()">
             Anmelden
@@ -39,4 +42,5 @@
     </div>
 </div>
 </body>
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </html>
