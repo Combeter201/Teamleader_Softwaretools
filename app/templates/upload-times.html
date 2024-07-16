@@ -6,6 +6,7 @@
     <title>Teamleader Softwaretools</title>
     <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumbs.css') }}">
 </head>
 <body onload="checkTableVisibility()">
 <header>
@@ -26,6 +27,22 @@
         {% endif %}
     </div>
 </header>
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <!-- Beispiel für Home Icon -->
+        <li class="breadcrumb-item">
+            <a href="/" class="breadcrumb-link">
+                <img src="/static/assets/home.svg" class="breadcrumb-icon" alt="Home Icon" width="16" height="16">
+                Startseite
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <img src="/static/assets/chevron.svg" class="breadcrumb-spacer" alt="Home Icon" width="16" height="16">
+            Zeiten hochladen
+        </li>
+    </ol>
+</nav>
 <div class="content">
     <div class="box-container">
         <h3>CSV Datei hochladen</h3>

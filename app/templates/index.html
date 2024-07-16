@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teamleader Softwaretools</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumbs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
@@ -27,6 +28,16 @@
         {% endif %}
     </div>
 </header>
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <!-- Beispiel für Home Icon -->
+        <li class="breadcrumb-item active">
+                <img src="/static/assets/home.svg" class="breadcrumb-icon" alt="Home Icon" width="16" height="16">
+                Startseite
+        </li>
+    </ol>
+</nav>
 <div class="content">
     {% if upload_times or manage_times or authorizations %}
     <div class="box-container">
