@@ -48,7 +48,9 @@
 <div class="content">
     <div class="box-container">
         {% if error_message %}
-        <p class="error-message">{{ error_message }}</p>
+         <button type="button" class="error-button" disabled>
+            {{ error_message }}
+        </button>
         {% else %}
         <img src="{{ url_for('static', filename='assets/error.gif') }}" alt="Error Image">
         <button type="button" class="error-button" disabled>

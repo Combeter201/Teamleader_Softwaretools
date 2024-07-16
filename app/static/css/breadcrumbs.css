@@ -18,7 +18,7 @@
     width: 12px;
     height: 12px;
     margin: auto 10px 4px 10px;
-    filter: brightness(0) saturate(100%) invert(43%) sepia(4%) saturate(227%) hue-rotate(171deg) brightness(94%) contrast(87%); /* Farbe #6c757d */
+    filter: brightness(95%) saturate(0%) invert(75%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
 }
 
 .breadcrumb-link {
@@ -34,7 +34,7 @@
 }
 
 .breadcrumb-item.active {
-    color: #6c757d;
+    color: #bcbcbc;
 }
 
 .breadcrumb-icon {

@@ -64,6 +64,7 @@
         </div>
         <div id="csvContent">
             {% if error_message %}
+            <img src="/static/assets/upload.gif" id="uploaderror" alt="Uploaderror Icon" height="300px">
             <p class="error-message">{{ error_message }}</p>
             {% endif %}
             {% if success_message %}

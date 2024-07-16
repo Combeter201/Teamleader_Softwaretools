@@ -386,3 +386,12 @@ button:disabled:hover img {
     box-shadow: -24px 0 #FFF, 24px 0 #8794df;
   }
 }
+
+.infotext {
+    font-size: 14px;
+}
+
+#uploaderror {
+    display: block;
+    margin: auto;
+}

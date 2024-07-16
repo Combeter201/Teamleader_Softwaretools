@@ -169,3 +169,7 @@ a {
     display: flex;
     justify-content: center;
 }
+
+#mainpage {
+    color: #8794df;
+}
