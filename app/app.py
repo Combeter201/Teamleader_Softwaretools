@@ -3,6 +3,7 @@ import io
 import json
 import locale
 import os
+import sys
 import tempfile
 import time
 
@@ -143,7 +144,6 @@ def absence():
     # Calling function to retrieve team leader's teams
     response = get_teamleader_teams(access_token, team_id)
 
-    # Extracting member IDs from the response
     try:
         ids = [member["id"] for team in response for member in team["members"]]
     except Exception as e:

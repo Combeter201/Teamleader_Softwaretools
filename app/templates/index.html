@@ -6,8 +6,8 @@
     <title>Teamleader Softwaretools</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumbs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
+    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
 </head>
 <body>
 <header>
@@ -33,8 +33,8 @@
     <ol class="breadcrumb">
         <!-- Beispiel für Home Icon -->
         <li class="breadcrumb-item active" id="mainpage">
-                <img src="/static/assets/home.svg" class="breadcrumb-icon" alt="Home Icon" width="16" height="16">
-                Startseite
+            <img src="/static/assets/home.svg" class="breadcrumb-icon" alt="Home Icon" width="16" height="16">
+            Startseite
         </li>
     </ol>
 </nav>
@@ -44,7 +44,8 @@
         {% if upload_times %}
         <div class="box">
             <a href="upload-times.html">
-                <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Hochladen Icon" width="32" height="32">
+                <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Hochladen Icon" width="32"
+                     height="32">
                 Zeiten hochladen
             </a>
         </div>
@@ -52,7 +53,8 @@
         {% if manage_times %}
         <div class="box">
             <a href="manage-times.html">
-                <img src="{{ url_for('static', filename='assets/files.png') }}" alt="Dateien Icon" width="32" height="32">
+                <img src="{{ url_for('static', filename='assets/files.png') }}" alt="Dateien Icon" width="32"
+                     height="32">
                 Zeiten verwalten
             </a>
         </div>
@@ -60,7 +62,8 @@
         {% if absence %}
         <div class="box">
             <a href="absence.html">
-                <img src="{{ url_for('static', filename='assets/absence.png') }}" alt="Hochladen Icon" width="32" height="32">
+                <img src="{{ url_for('static', filename='assets/absence.png') }}" alt="Hochladen Icon" width="32"
+                     height="32">
                 Abwesenheiten einsehen
             </a>
         </div>
@@ -68,7 +71,8 @@
         {% if authorizations %}
         <div class="box">
             <a href="authorizations.html">
-                <img src="{{ url_for('static', filename='assets/easy-access.png') }}" alt="Hochladen Icon" width="32" height="32">
+                <img src="{{ url_for('static', filename='assets/easy-access.png') }}" alt="Hochladen Icon" width="32"
+                     height="32">
                 Berechtigungen zuweisen
             </a>
         </div>
