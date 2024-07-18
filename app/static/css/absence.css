@@ -335,7 +335,7 @@ select.view-select::part(listbox) {
 
 .day {
     width: 16%;
-    max-width 235px;
+    max-width: 235px;
     background-color: #f2f2f2;
     border: 1px solid #d1d1d1;
     border-radius: 5px;

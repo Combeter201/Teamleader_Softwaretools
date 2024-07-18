@@ -3,7 +3,6 @@ import io
 import json
 import locale
 import os
-import sys
 import tempfile
 import time
 
