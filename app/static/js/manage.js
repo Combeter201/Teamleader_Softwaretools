@@ -86,6 +86,7 @@ function sendSelectedIdToPython() {
         },
         body: JSON.stringify({
             selectedId: selectedId,
+            selectedMonth: monthValue,
             first_tmstmp: first_tmstmp,
             second_tmstmp: second_tmstmp,
             third_tmstmp: third_tmstmp,

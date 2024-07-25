@@ -14,7 +14,8 @@ from utils.date_utils import calculate_total_hours
 from config import Config
 from utils.csv_utils import parse_csv, sort_and_group_by_date
 from utils.teamleader_utils import get_teamleader_token, get_teamleader_user, get_teamleader_teams, \
-    get_teamleader_user_info, get_teamleader_user_times, refresh_teamleader_token, get_all_users, get_user_absence
+    get_teamleader_user_info, get_teamleader_user_times, refresh_teamleader_token, get_all_users, get_user_absence, \
+    get_number_of_absence_days
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY  # Setze einen geheimen Schlüssel für die Sitzungsverwaltung
@@ -23,11 +24,12 @@ locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
 
 def handle_token_refresh():
     username = session.get('username')
+    initials = session.get('initials')
     try:
         refresh_teamleader_token(Config.CLIENT_ID, Config.CLIENT_SECRET, session.get('refresh_token'))
     except Exception as e:
         error_message = "Token ist abgelaufen. Melden Sie sich erneut an."
-        return render_template('error.html', error_message=error_message, username=username)
+        return render_template('error.html', error_message=error_message, username=username, initials=initials)
     return None
 
 
@@ -44,7 +46,10 @@ def load_worktype():
 @app.route('/')
 def home():
     user_id = session.get('userId')
+
     if user_id:
+        username = session.get('username')
+        initials = session.get('initials')
         whitelist = load_whitelist()
         user_permissions = next((user for user in whitelist if user['id'] == user_id), None)
         session['user_permissions'] = user_permissions
@@ -55,7 +60,8 @@ def home():
                                    upload_times=user_permissions['upload_times'],
                                    manage_times=user_permissions['manage_times'],
                                    absence=user_permissions['absence'],
-                                   authorizations=user_permissions['authorizations'])
+                                   authorizations=user_permissions['authorizations'],
+                                   initials=initials)
 
     return render_template('index.html')
 
@@ -67,27 +73,34 @@ def authorizations():
         return error_redirect
 
     username = session.get('username')
+    initials = session.get('initials')
     access_token = session.get('access_token')
 
     user_permissions = session.get('user_permissions', {})
     if not user_permissions.get('authorizations', False):
-        return render_template('error.html', username=username)
+        return render_template('error.html', username=username, initials=initials)
 
     user_list = get_all_users(access_token)
 
-    return render_template('authorizations.html', username=username, user_list=user_list)
+    return render_template('authorizations.html', username=username, initials=initials, user_list=user_list)
 
 
 @app.route('/error.html')
 def errror():
     username = session.get('username')
-    return render_template('error.html', username=username)
+    initials = session.get('initials')
+    return render_template('error.html', username=username, initials=initials)
 
 
 @app.route('/absence.html', methods=['POST', 'GET'])
 def absence():
+    error_redirect = handle_token_refresh()
+    if error_redirect:
+        return error_redirect
+
     access_token = session.get('access_token')
     username = session.get('username')
+    initials = session.get('initials')
     userId = session.get('userId')
     outputType = 'date'
     week_dates = []
@@ -147,7 +160,7 @@ def absence():
         ids = [member["id"] for team in response for member in team["members"]]
     except Exception as e:
         error_message = f"Dein Token ist abgelaufen, melde dich erneut an um den Token zu erneuern"
-        return render_template('absence.html', error_message=error_message, username=username)
+        return render_template('absence.html', error_message=error_message, username=username, initials=initials)
 
     # Prepare list for absences
     absences_list = []
@@ -195,27 +208,29 @@ def absence():
     day_of_week = date_requested.strftime("%A")
 
     # Rendering the 'absence.html' template and passing data
-    return render_template('absence.html', username=username, absences=absences_list,
+    return render_template('absence.html', username=username, initials=initials, absences=absences_list,
                            today=selected_date, view=outputType, day=day_of_week, date=week_dates)
 
 
 @app.route('/upload-times.html')
 def zeiten_hochladen():
     username = session.get('username')
+    initials = session.get('initials')
     user_permissions = session.get('user_permissions', {})
     if not user_permissions.get('upload_times', False):
-        return render_template('error.html', username=username)
+        return render_template('error.html', username=username, initials=initials)
 
-    return render_template('upload-times.html', username=username)
+    return render_template('upload-times.html', username=username, initials=initials)
 
 
 @app.route('/manage-times.html')
 def zeiten_verwalten():
     username = session.get('username')
+    initials = session.get('initials')
     user_permissions = session.get('user_permissions', {})
     if not user_permissions.get('manage_times', False):
-        return render_template('error.html', username=username)
-    return render_template('manage-times.html', username=username)
+        return render_template('error.html', username=username, initials=initials)
+    return render_template('manage-times.html', username=username, initials=initials)
 
 
 @app.route('/manage-times.html', methods=['POST'])
@@ -225,14 +240,37 @@ def get_teams():
         return error_redirect
 
     username = session.get('username')
+    initials = session.get('initials')
     access_token = session.get('access_token')
     request_data = request.get_json()
+    selectedMonth = request_data.get('selectedMonth')
+
+    # Umwandlung in ein Datum (wir nehmen den ersten Tag des Monats)
+    selected_date = datetime.strptime(selectedMonth + '-01', '%Y-%m-%d')
+
+    # Berechnung des ersten und letzten Tags des Monats
+    beginofMonth = (selected_date - timedelta(days=1)).strftime('%Y-%m-%d')
+    # Finde den letzten Tag des Monats durch den ersten Tag des nächsten Monats
+    next_month = selected_date.replace(day=28) + timedelta(days=4)  # Gehe einen Monat weiter
+    endofMonth = ((next_month - timedelta(days=next_month.day)) + timedelta(days=1)).strftime('%Y-%m-%d')
     selected_id = request_data.get('selectedId')
     first_tmstmp = request_data.get('first_tmstmp')
     second_tmstmp = request_data.get('second_tmstmp')
     third_tmstmp = request_data.get('third_tmstmp')
     end_tmstmp = request_data.get('end_tmstmp')
     fourth_tmstmp = request_data.get('fourth_tmstmp')
+
+    # Initialisiere die Zählvariable für Arbeitstage
+    workdays_count = 0
+
+    # Schleife durch alle Tage des Monats und zähle die Arbeitstage
+    current_day = selected_date
+    while current_day <= (datetime.strptime(endofMonth, '%Y-%m-%d') - timedelta(days=1)):
+        # Prüfe, ob der aktuelle Tag ein Arbeitstag ist (Montag bis Freitag)
+        if current_day.weekday() < 5:  # Montag (0) bis Freitag (4)
+            workdays_count += 1
+        # Gehe zum nächsten Tag
+        current_day += timedelta(days=1)
 
     response = get_teamleader_teams(access_token, selected_id)
 
@@ -243,6 +281,7 @@ def get_teams():
         for member in members:
             member_id = member.get('id')
             first_name, last_name = get_teamleader_user_info(access_token, member_id)
+            days_of_absence = get_number_of_absence_days(access_token, member_id, beginofMonth, endofMonth)
             try:
 
                 times_data = get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp,
@@ -253,18 +292,21 @@ def get_teams():
                     'total_duration': times_data["total_duration"],
                     'invoiceable_duration': times_data["invoiceable_duration"],
                     'non_invoiceable_duration': times_data["non_invoiceable_duration"],
-                    'total_days': times_data["total_days"],
-                    'invoiceable_percentage': times_data["invoiceable_percentage"],
-                    'overtime_hours': times_data["overtime_hours"]
+                    'total_days': workdays_count - days_of_absence,
+                    'invoiceable_percentage': "{:.2f}".format(
+                        float(times_data["invoiceable_duration"].replace(',', '.')) / (
+                                workdays_count - days_of_absence) * 8),
+                    'overtime_hours': "{:.2f}".format(
+                        float(times_data["total_duration"].replace(',', '.')) - (workdays_count - days_of_absence) * 8)
                 })
 
             except Exception as e:
                 error_message = f"Dir fehlen die Berechtigung, um dieses Team anzuschauen"
                 return render_template('manage-times.html', error_message=error_message,
-                                       username=username)
+                                       username=username, initials=initials)
 
     session['members_info'] = members_info
-    return render_template('manage-times.html', members_info=members_info, username=username)
+    return render_template('manage-times.html', members_info=members_info, username=username, initials=initials)
 
 
 @app.route('/download-template')
@@ -276,13 +318,14 @@ def download_template():
 def upload():
     temp_dir = tempfile.gettempdir()
     username = session.get('username')
+    initials = session.get('initials')
 
     if 'csvFile' not in request.files:
-        return render_template('upload-times.html', error_message='Keine Datei ausgewählt!', username=username)
+        return render_template('upload-times.html', error_message='Keine Datei ausgewählt!', username=username, initials=initials)
 
     file = request.files['csvFile']
     if file.filename == '':
-        return render_template('upload-times.html', error_message='Keine Datei ausgewählt!', username=username)
+        return render_template('upload-times.html', error_message='Keine Datei ausgewählt!', username=username, initials=initials)
 
     if file and file.filename.endswith('.csv'):
         csv_content = file.stream.read().decode('utf-8')
@@ -290,7 +333,7 @@ def upload():
         temp_csv_path = os.path.join(temp_dir, 'temp_upload.csv')
         if csv_data is None:
             return render_template('upload-times.html', error_message='Fehler beim Parsen der CSV-Datei!',
-                                   username=username)
+                                   username=username, initials=initials)
 
         try:
             with open(temp_csv_path, 'w', newline='') as f:
@@ -299,12 +342,12 @@ def upload():
                 for row in csv_data:
                     writer.writerow(list(row.values()))  # Schreibe die Datenzeilen in die CSV-Datei
         except Exception as e:
-            return render_template('upload-times.html', error_message=str(e), username=username)
+            return render_template('upload-times.html', error_message=str(e), username=username, initials=initials)
 
         sorted_data = sort_and_group_by_date(csv_data)
-        return render_template('upload-times.html', sorted_data=sorted_data, username=username)
+        return render_template('upload-times.html', sorted_data=sorted_data, username=username, initials=initials)
 
-    return render_template('upload-times.html', error_message='Ungültiger Dateityp!', username=username)
+    return render_template('upload-times.html', error_message='Ungültiger Dateityp!', username=username, initials=initials)
 
 
 @app.route('/authorize-teamleader')
@@ -346,6 +389,7 @@ def login():
     try:
         user_info = get_teamleader_user(access_token)
         session['username'] = f"{user_info['first_name']} {user_info['last_name']}"
+        session['initials'] = f"{user_info['first_name'][0]}{user_info['last_name'][0]}"
         session['userId'] = user_info['id']
         return redirect(session.get('previous_url', '/'))
     except requests.exceptions.RequestException as e:
@@ -355,6 +399,7 @@ def login():
 @app.route('/upload-to-teamleader')
 def fetch_teamleader_data():
     username = session.get('username')
+    initials = session.get('initials')
     temp_dir = tempfile.gettempdir()
     temp_csv_path = os.path.join(temp_dir, 'temp_upload.csv')
     # Lade Daten aus der temporären CSV-Datei
@@ -405,12 +450,12 @@ def fetch_teamleader_data():
             response.raise_for_status()
             if response.status_code != 201:
                 error_message = "Fehler beim Hochladen der Daten in Teamleader."
-                return render_template('upload-times.html', error_message=error_message, username=username)
+                return render_template('upload-times.html', error_message=error_message, username=username, initials=initials)
         except requests.exceptions.RequestException as e:
-            return render_template('upload-times.html', error_message=str(e), username=username)
+            return render_template('upload-times.html', error_message=str(e), username=username, initials=initials)
 
     success_message = "Die Zeiten wurden erfolgreich hochgeladen!"
-    return render_template('upload-times.html', success_message=success_message, username=username)
+    return render_template('upload-times.html', success_message=success_message, username=username, initials=initials)
 
 
 @app.route('/clear-data', methods=['POST'])

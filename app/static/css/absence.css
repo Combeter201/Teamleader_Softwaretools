@@ -42,7 +42,7 @@ header h1 {
 /* Box container styles */
 .box-container {
     width: 100%;
-    max-width: 1500px;
+    max-width: 1700px;
     background-color: #fff;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -104,7 +104,7 @@ a {
     outline: none;
 }
 
-.confirm-button {
+.confirm-button, .forward-button, .backward-button {
     background-color: #8794df;
     color: white;
     border: none;
@@ -115,11 +115,23 @@ a {
     display: flex; /* Initial versteckt */
     height: 45px;
     align-items: center;
+    outline: none;
 }
 
-.confirm-button:hover {
+.confirm-button:hover, .forward-button:hover, .backward-button:hover {
     background-color: #7d89cd;
 }
+
+.forward-button img, .backward-button img {
+    filter: invert(100%);
+    width: 16px;
+    margin: 0;
+}
+
+.backward-button {
+    transform: scaleX(-1);
+}
+
 /* Header styles */
 header {
     display: flex;
@@ -335,7 +347,7 @@ select.view-select::part(listbox) {
 
 .day {
     width: 16%;
-    max-width: 235px;
+    max-width: 270px;
     background-color: #f2f2f2;
     border: 1px solid #d1d1d1;
     border-radius: 5px;
@@ -370,7 +382,13 @@ h4 {
 }
 
 /* Red color for "krank" */
-span[data-absence="Krank"] {
+span[data-absence="WE"] {
+    color: #4abfc1;
+    font-weight: bold;
+}
+
+/* Red color for "krank" */
+span[data-absence="Krank"], span[data-absence="Kind Krank"] {
     color: #d47c75;
     font-weight: bold;
 }
@@ -382,17 +400,29 @@ span[data-absence="Office"] {
 }
 
 /* Yellow color for "Home Office" */
-span[data-absence="Home Office"] {
+span[data-absence="Home Office"], span[data-absence="Berufsschule/FH/Uni"], span[data-absence="Gleitzeit"], span[data-absence="Kurzarbeit"], span[data-absence="Workation"] {
     color: #ffbc66;
     font-weight: bold;
 }
 
 /* Green color for "Urlaub" */
-span[data-absence="Urlaub"] {
+span[data-absence="Urlaub"], span[data-absence="Resturlaub"], span[data-absence="Sonderurlaub"], span[data-absence="Unbezahlter Urlaub"], span[data-absence="Urlaubsdokus_Studis"], span[data-absence="Überstunden"], span[data-absence="Elternzeit"], span[data-absence="Mutterschutz"]{
     color: #8794df;
     font-weight: bold;
 }
 
 .date {
     margin-bottom: 10px;
+}
+
+.avatar-initials {
+  margin-right: 1rem;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  line-height: 40px;
+  text-align: center;
+  color: white;
+  background-color: #6598a7;
+  font-size: 20px;
 }

@@ -12,12 +12,12 @@
 <body>
 <header>
     <div class="left-container">
-        <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="32" height="32">
+        <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="64">
         <a href="."><h1>Teamleader Softwaretools</h1></a>
     </div>
     <div class="right-container">
         {% if username %}
-        <span class="username">Willkommen, {{ username }}</span>
+        <div class="avatar-initials" id="avatar-initials">{{ initials }}</div>
         <button type="button" class="logout-button" onclick="logout()">
             Abmelden
         </button>
@@ -34,7 +34,7 @@
         <!-- Beispiel für Home Icon -->
         <li class="breadcrumb-item">
             <a href="/" class="breadcrumb-link">
-                <img src="/static/assets/home.svg" class="breadcrumb-icon" alt="Home Icon" width="16" height="16" filter="">
+                <img src="/static/assets/home.svg" class="breadcrumb-icon" alt="Home Icon" width="16" height="16">
                 Startseite
             </a>
         </li>
@@ -53,8 +53,17 @@
                     <option value="week" {% if view=="week" %}selected{% endif %}>Woche</option>
                     <option value="month" hidden>Monat</option>
                 </select>
-                <input type="{% if view == 'date' %}date{% elif view == 'week' %}week{% else %}date{% endif %}" id="date"
+                <button type="button" class="backward-button"
+                        onclick="setDateBackward()">
+                    <img src="{{ url_for('static', filename='assets/chevron.svg') }}" alt="" width="32">
+                </button>
+                <input type="{% if view == 'date' %}date{% elif view == 'week' %}week{% else %}date{% endif %}"
+                       id="date"
                        name="date" class="date-input" value="{{ today }}">
+                <button type="button" class="forward-button"
+                        onclick="setDateForward()">
+                    <img src="{{ url_for('static', filename='assets/chevron.svg') }}" alt="" width="32">
+                </button>
                 <button type="button" class="confirm-button" id="confirmbutton" onclick="checkAbsenceforDate()">
                     Bestätigen
                 </button>
@@ -77,7 +86,11 @@
                     {% for member in absences %}
                     <div class="status">
                         <span class="name">{{ member.name }}</span>
+                        {% if day == 'Samstag' or day == 'Sonntag' %}
+                        <span class="absence" data-absence="WE">WE</span>
+                        {% else %}
                         <span class="absence" data-absence="{{ member.absence[0] }}">{{ member.absence[0] }}</span>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>

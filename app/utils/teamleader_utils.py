@@ -249,8 +249,44 @@ def get_teamleader_user_info(access_token, member_id):
         return None, None
 
 
+def get_number_of_absence_days(access_token, member_id, startDate, endDate):
+    headers = {'Authorization': f'Bearer {access_token}'}
+    body = json.dumps({
+        "id": member_id,
+        "filter": {
+            "starts_after": startDate,
+            "ends_before": endDate
+        }
+    })
+    try:
+        response = requests.post('https://api.focus.teamleader.eu/users.listDaysOff', headers=headers, data=body)
+        response.raise_for_status()
+
+        data = response.json()
+
+        # Lese die IDs für "Urlaub" und "Krank" aus der day_off_type.json Datei
+        with open('static/data/day_off_type.json', 'r') as f:
+            day_off_types = json.load(f)
+
+        vacation_and_sick_ids = [item['id'] for item in day_off_types if item['type'] in ['Urlaub', 'Krank']]
+        target_count = 0
+
+        # Iteriere durch die Daten und zähle die Vorkommen der Ziel-IDs
+        for item in data['data']:
+            if item['leave_type']['id'] in vacation_and_sick_ids:
+                target_count += 1
+
+        return target_count
+
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error occurred: {err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+
+
 def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmstmp, third_tmstmp, end_tmstmp,
                               fourth_tmstmp=None):
+
     try:
         headers = {'Authorization': f'Bearer {access_token}'}
 
@@ -278,6 +314,10 @@ def get_teamleader_user_times(access_token, member_id, first_tmstmp, second_tmst
                     "started_after": interval["started_after"],
                     "ended_before": interval["ended_before"],
                     "sort": [{"field": "starts_on"}]
+                },
+                "page": {
+                    "size": 100,
+                    "number": 1
                 }
             }
 

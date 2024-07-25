@@ -12,12 +12,12 @@
 <body>
 <header>
     <div class="left-container">
-        <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="32" height="32">
+        <img src="{{ url_for('static', filename='assets/timer.png') }}" alt="Timer Icon" width="64">
         <a href="."><h1>Teamleader Softwaretools</h1></a>
     </div>
     <div class="right-container">
         {% if username %}
-        <span class="username">Willkommen, {{ username }}</span>
+        <div class="avatar-initials" id="avatar-initials">{{ initials }}</div>
         <button type="button" class="logout-button" onclick="logout()">
             Abmelden
         </button>
@@ -50,7 +50,7 @@
             <div class="teamleader-users-container">
                 <select id="teamSelect" class="teams" onchange="activateTeams()">
                     <option disabled selected hidden>Team auswählen</option>
-                    {% if username == "Anja Rausch" %}
+                    {% if username == "Anja Rausch" or username == "Laura Boreatti" %}
                     <optgroup label="Mitarbeiter">
                         <option value="option14" id="-1">Alle Mitarbeiter</option>
                     </optgroup>
