@@ -281,6 +281,7 @@ def get_teams():
         for member in members:
             member_id = member.get('id')
             first_name, last_name = get_teamleader_user_info(access_token, member_id)
+            print(member_id)
             days_of_absence = get_number_of_absence_days(access_token, member_id, beginofMonth, endofMonth)
             try:
 
