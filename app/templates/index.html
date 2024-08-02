@@ -39,14 +39,14 @@
     </ol>
 </nav>
 <div class="content">
-    {% if upload_times or manage_times or authorizations %}
+    {% if upload_times or manage_times or absence or authorizations %}
     <div class="box-container">
         {% if upload_times %}
         <div class="box">
             <a href="upload-times.html">
                 <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Hochladen Icon" width="32"
                      height="32">
-                Zeiten hochladen
+                    Zeitenbuchung erfassen
             </a>
         </div>
         {% endif %}
@@ -55,7 +55,7 @@
             <a href="manage-times.html">
                 <img src="{{ url_for('static', filename='assets/files.png') }}" alt="Dateien Icon" width="32"
                      height="32">
-                Zeiten verwalten
+                Zeitbuchung einsehen
             </a>
         </div>
         {% endif %}
@@ -68,6 +68,14 @@
             </a>
         </div>
         {% endif %}
+        <div class="box">
+        <div class="ribbon"><span>Neu</span></div>
+            <a href="birthday.html">
+                <img src="{{ url_for('static', filename='assets/birthday.png') }}" alt="Hochladen Icon" width="32"
+                     height="32">
+                Geburtstage
+            </a>
+        </div>
         {% if authorizations %}
         <div class="box">
             <a href="authorizations.html">

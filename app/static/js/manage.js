@@ -2,25 +2,12 @@ function downloadCSV() {
     window.location.href = '/download-csv';
 }
 
-function activateTeams() {
-    const teamSelect = document.getElementById('teamSelect');
-    const confirmButton = document.getElementById('confirmbutton');
-    const monthSelect = document.getElementById('month');
-
-    // Überprüfen, ob das Team-Auswahlfeld leer ist oder nicht ausgewählt wurde
-    if (teamSelect.value === "" || teamSelect.selectedIndex === 0) {
-        confirmButton.disabled = true;
-    } else {
-        // Überprüfen, ob das Monatsfeld nicht ausgewählt ist
-        if (!monthSelect.value) {
-            confirmButton.disabled = true;
-        } else {
-            confirmButton.disabled = false;
-        }
-    }
-}
-
 function sendSelectedIdToPython() {
+    const loader = document.getElementById('loader');
+	loader.className = "loading";
+	const confirmButton = document.getElementById('confirmbutton');
+	confirmButton.disabled = true;
+
     try {
     const membersTable = document.getElementById('membersTable');
     if (membersTable) {
@@ -36,11 +23,9 @@ function sendSelectedIdToPython() {
         button.disabled = true;
     });
 
-    const loader = document.getElementById('loader');
-    loader.className = "loading";
-
     const teamSelect = document.getElementById('teamSelect');
     const selectedOption = teamSelect.options[teamSelect.selectedIndex];
+    const team_name = selectedOption.innerHTML;
     const selectedId = selectedOption.getAttribute('id');
 
     const inputMonth = document.getElementById('month');
@@ -86,6 +71,8 @@ function sendSelectedIdToPython() {
         },
         body: JSON.stringify({
             selectedId: selectedId,
+            selectedOption: selectedOption.value,
+            team_name: team_name,
             selectedMonth: monthValue,
             first_tmstmp: first_tmstmp,
             second_tmstmp: second_tmstmp,
@@ -107,3 +94,69 @@ function sendSelectedIdToPython() {
         console.error('Error:', error);
     });
 }
+
+function setDateForward() {
+    const dateInput = document.getElementById('month');
+    const teamSelect = document.getElementById('teamSelect');
+    const selectedOption = teamSelect.options[teamSelect.selectedIndex];
+    const team_name = selectedOption.innerHTML;
+    const inputValue = dateInput.value;
+
+    // Check if the input is in the "YYYY-MM" format
+    if (/^\d{4}-\d{2}$/.test(inputValue)) {
+        const [year, month] = inputValue.split('-').map(Number);
+        let currentDate = new Date(year, month - 1, 1);
+
+        // Add one month
+        currentDate.setMonth(currentDate.getMonth() + 1);
+
+        const newYear = currentDate.getFullYear();
+        const newMonth = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+        dateInput.value = `${newYear}-${newMonth}`;
+    } else {
+        console.error('Invalid date format. Expected YYYY-MM.');
+    }
+    if(team_name != "Team auswählen"){
+        sendSelectedIdToPython();
+    }
+}
+
+
+function setDateBackward() {
+    const dateInput = document.getElementById('month');
+    const teamSelect = document.getElementById('teamSelect');
+    const selectedOption = teamSelect.options[teamSelect.selectedIndex];
+    const team_name = selectedOption.innerHTML;
+    const inputValue = dateInput.value;
+
+    // Check if the input is in the "YYYY-MM" format
+    if (/^\d{4}-\d{2}$/.test(inputValue)) {
+        const [year, month] = inputValue.split('-').map(Number);
+        let currentDate = new Date(year, month - 1, 1);
+
+        // Subtract one month
+        currentDate.setMonth(currentDate.getMonth() - 1);
+
+        const newYear = currentDate.getFullYear();
+        const newMonth = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+        dateInput.value = `${newYear}-${newMonth}`;
+    } else {
+        console.error('Invalid date format. Expected YYYY-MM.');
+    }
+    if(team_name != "Team auswählen"){
+        sendSelectedIdToPython();
+    }
+}
+
+function toggleConfirmButton() {
+            const teamSelect = document.getElementById('teamSelect');
+            const date = document.getElementById('month');
+
+            const confirmButton = document.getElementById('confirmbutton');
+            // Check if an option other than the placeholder is selected
+            if (teamSelect.value && date.value) {
+                confirmButton.disabled = false;
+            } else {
+                confirmButton.disabled = true;
+            }
+        }

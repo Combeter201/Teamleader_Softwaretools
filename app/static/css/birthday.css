@@ -42,7 +42,7 @@ header h1 {
 /* Box container styles */
 .box-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1700px;
     background-color: #fff;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -104,11 +104,6 @@ a {
     outline: none;
 }
 
-select.teams::part(listbox) {
-    padding: 0.5em;
-    margin: 0.5em;
-}
-
 .confirm-button, .forward-button, .backward-button {
     background-color: #8794df;
     color: white;
@@ -137,9 +132,6 @@ select.teams::part(listbox) {
     transform: scaleX(-1);
 }
 
-.confirm-button:hover {
-    background-color: #7d89cd;
-}
 /* Header styles */
 header {
     display: flex;
@@ -217,30 +209,6 @@ header .right-container {
     gap: 10px; /* Adjust spacing between file input and button */
 }
 
-/* Table Styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px; /* Abstand über der Tabelle */
-}
-
-table, th, td {
-    border: 1px solid #ccc;
-}
-
-.times {
-    text-align:right;
-}
-
-th, td {
-    padding: 8px;
-    text-align: left;
-}
-
-th {
-    background-color: #f2f2f2;
-}
-
 .hidden {
     display: none;
 }
@@ -249,14 +217,14 @@ th {
     display: table;
 }
 
-input[type="month"] {
+input[type="date"], input[type="month"], input[type="week"] {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     background-color: #8794df;
     color: white;
     border: none;
-    outline: none;
+    border: none;
     padding: 10px 10px;
     cursor: pointer;
     border-radius: 4px;
@@ -265,18 +233,19 @@ input[type="month"] {
     justify-content: center;
     align-items: center;
     height: 25px;
+    outline: none;
 }
 
-input[type="month"]::-webkit-calendar-picker-indicator {
+input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator, input[type="week"]::-webkit-calendar-picker-indicator {
     filter: invert(100%);
     cursor: pointer;
 }
 
-input[type="month"]::-ms-expand {
+input[type="date"]::-ms-expand, input[type="month"]::-ms-expand, input[type="week"]::-ms-expand{
     display: none;
 }
 
-input[type="month"]:hover {
+input[type="date"]:hover, input[type="date"]:hover, input[type="month"]::-ms-expand, input[type="week"]::-ms-expand {
     background-color: #7d89cd;
 }
 
@@ -297,29 +266,6 @@ button:disabled:hover img {
     color: red;
     text-align: center;
     margin-top: 20px;
-}
-
-/* Button Styles */
-.download-button {
-    background-color: #8794df;
-    color: white;
-    border: none;
-    padding: 10px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
-    display: flex; /* Initial versteckt */
-}
-
-.download-button:hover {
-    background-color: #7d89cd;
-}
-
-.download-button img {
-    filter: invert(100%);
-    width: 25px;
-    height: 25px;
-    margin: auto;
 }
 
 .loading {
@@ -360,6 +306,110 @@ button:disabled:hover img {
   }
 }
 
+.view-select {
+    background-color: #8794df;
+    color: white;
+    border: none;
+    border-radius: 0px;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    display: flex; /* Initial versteckt */
+    height: 45px;
+}
+
+.view-select:focus{
+    outline: none;
+}
+
+select.view-select::part(listbox) {
+    padding: 0.5em;
+    margin: 0.5em;
+}
+
+#select-options {
+    background-color: red;
+}
+
+.calendar {
+    display: flex;
+    justify-content: center;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: auto; /* Anpassung der grid-template-rows für dynamische Höhe */
+    gap: 10px;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.card {
+    min-width: 15%;
+    max-width: 300px;
+    background-color: #f2f2f2;
+    border: 1px solid #d1d1d1;
+    border-radius: 5px;
+    padding: 20px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.3s;
+    display: grid; /* Um das `status`-Element innerhalb von `day` zu verwenden */
+    grid-template-rows: auto 1fr; /* Platz für Datum und Status */
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card span {
+    display: block;
+    font-size: 16px;
+    font-weight: normal;
+    color: #666;
+}
+
+.birthdayblock {
+    display: flex;
+    justify-content: space-between; /* Optional: Abstände zwischen den Spalten hinzufügen */
+    margin: 5px 0;
+}
+
+h4 {
+    margin: 10px 0;
+}
+
+/* Red color for "krank" */
+span[data-absence="WE"] {
+    color: #4abfc1;
+    font-weight: bold;
+}
+
+/* Red color for "krank" */
+span[data-absence="Krank"], span[data-absence="Kind Krank"] {
+    color: #d47c75;
+    font-weight: bold;
+}
+
+/* Blue color for "Office" */
+span[data-absence="Office"] {
+    color: #bcbcbc;
+    font-weight: bold;
+}
+
+/* Yellow color for "Home Office" */
+span[data-absence="Home Office"], span[data-absence="Berufsschule/FH/Uni"], span[data-absence="Gleitzeit"], span[data-absence="Kurzarbeit"], span[data-absence="Workation"] {
+    color: #ffbc66;
+    font-weight: bold;
+}
+
+/* Green color for "Urlaub" */
+span[data-absence="Urlaub"], span[data-absence="Resturlaub"], span[data-absence="Sonderurlaub"], span[data-absence="Unbezahlter Urlaub"], span[data-absence="Urlaubsdokus_Studis"], span[data-absence="Überstunden"], span[data-absence="Elternzeit"], span[data-absence="Mutterschutz"]{
+    color: #8794df;
+    font-weight: bold;
+}
+
 .avatar-initials {
   margin-right: 1rem;
   height: 40px;
@@ -370,4 +420,12 @@ button:disabled:hover img {
   color: white;
   background-color: #6598a7;
   font-size: 20px;
+}
+
+.date {
+    margin-bottom: 1.6rem;
+}
+
+.empty {
+    margin: 0 auto;
 }

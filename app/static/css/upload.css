@@ -407,3 +407,8 @@ button:disabled:hover img {
   background-color: #6598a7;
   font-size: 20px;
 }
+
+h3 {
+    color: #8794df;
+    margin: 1rem 0;
+}
