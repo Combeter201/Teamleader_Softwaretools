@@ -18,7 +18,7 @@ from flask import (
     send_from_directory,
     session,
 )
-from utils.csv_utils import parse_csv, sort_and_group_by_date
+from utils.csv_utils import parse_csv, group_by_date
 from utils.date_utils import calculate_total_hours
 from utils.teamleader_utils import (
     get_all_users,
@@ -29,7 +29,7 @@ from utils.teamleader_utils import (
     get_teamleader_user_info,
     get_teamleader_user_times,
     get_user_absence,
-    refresh_teamleader_token,
+    refresh_teamleader_token, get_contact_info,
 )
 
 app = Flask(__name__)
@@ -58,12 +58,12 @@ def handle_token_refresh():
 
 
 def load_whitelist():
-    with open("static/data/whitelist.json", "r") as f:
+    with open("static/data/whitelist.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def load_worktype():
-    with open("static/data/worktype.json", "r") as f:
+    with open("static/data/worktype.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -87,6 +87,7 @@ def home():
                 upload_times=user_permissions["upload_times"],
                 manage_times=user_permissions["manage_times"],
                 absence=user_permissions["absence"],
+                birthday=user_permissions["birthday"],
                 authorizations=user_permissions["authorizations"],
                 initials=initials,
             )
@@ -126,11 +127,20 @@ def error():
 def birthday():
     username = session.get("username")
     initials = session.get("initials")
+    access_token = session.get("access_token")
     date = datetime.today().date().strftime("%d.%m.%Y")
-    # members = [{"name":"Max Mustermann", "age":30}]
-    members = []
-    return render_template("birthday.html", username=username, initials=initials, date=date, members=members)
+    user_permissions = session.get("user_permissions", {})
+    members = get_contact_info(access_token)
 
+    if not user_permissions.get("birthday", False):
+        return render_template("error.html", username=username, initials=initials)
+    return render_template(
+        "birthday.html",
+        username=username,
+        initials=initials,
+        date=date,
+        members=members,
+    )
 
 @app.route("/absence.html", methods=["POST", "GET"])
 def absence():
@@ -146,6 +156,13 @@ def absence():
     week_dates = []
     selected_date = ""
 
+    holidays = set([
+        "Neujahr", "Heilige Drei Könige", "Karfreitag", "Ostermontag",
+        "Tag der Arbeit", "Christi Himmelfahrt", "Pfingstmontag",
+        "Fronleichnam", "Mariä Himmelfahrt", "Tag der Deutschen Einheit",
+        "Allerheiligen", "1. Weihnachtstag", "2. Weihnachtstag"
+    ])
+
     try:
         request_data = request.get_json()
         inputType = request_data.get("inputType")
@@ -156,6 +173,12 @@ def absence():
             date_requested = datetime.strptime(date_param, "%Y-%m-%d").date()
             startDate = date_requested - timedelta(days=1)
             endDate = date_requested + timedelta(days=1)
+
+            week_dates.clear()
+            day = startDate + timedelta(days=1)
+            formatted_day = day.strftime("%d.%m.%Y")
+            week_dates.append(formatted_day)
+
         elif inputType == "week":
             selected_date = date_param
             year, week = date_param.split("-W")
@@ -215,6 +238,7 @@ def absence():
             error_message=error_message,
             username=username,
             initials=initials,
+            holidays=holidays
         )
 
     # Prepare list for absences
@@ -284,6 +308,7 @@ def absence():
         view=outputType,
         day=day_of_week,
         date=week_dates,
+        holidays=holidays
     )
 
 
@@ -463,7 +488,15 @@ def upload():
         )
 
     if file and file.filename.endswith(".csv"):
-        csv_content = file.stream.read().decode("utf-8")
+        try:
+            csv_content = file.stream.read().decode("utf-8")
+        except UnicodeDecodeError:
+            return render_template(
+                "upload-times.html",
+                error_message="Fehlerhafte Exceldatei!",
+                username=username,
+                initials=initials,
+            )
         csv_data = parse_csv(csv_content)
         temp_csv_path = os.path.join(temp_dir, "temp_upload.csv")
         if csv_data is None:
@@ -475,7 +508,7 @@ def upload():
             )
 
         try:
-            with open(temp_csv_path, "w", newline="") as f:
+            with open(temp_csv_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f, delimiter=";")
                 writer.writerow(
                     list(csv_data[0].keys())
@@ -487,12 +520,12 @@ def upload():
         except Exception as e:
             return render_template(
                 "upload-times.html",
-                error_message=str(e),
+                error_message="Ungültiger Dateityp!",
                 username=username,
                 initials=initials,
             )
 
-        sorted_data = sort_and_group_by_date(csv_data)
+        sorted_data = group_by_date(csv_data)
         return render_template(
             "upload-times.html",
             sorted_data=sorted_data,
@@ -567,7 +600,7 @@ def fetch_teamleader_data():
     temp_dir = tempfile.gettempdir()
     temp_csv_path = os.path.join(temp_dir, "temp_upload.csv")
     # Lade Daten aus der temporären CSV-Datei
-    with open(temp_csv_path, "r", newline="") as f:
+    with open(temp_csv_path, "r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter=";")
         csv_data = list(reader)
 
@@ -701,12 +734,14 @@ def download_csv():
 
     # Schreibe den Inhalt in die CSV-Datei mit newline=''
     with open(csv_filename, "w", newline="", encoding='utf-8') as f:
+        f.write('\ufeff')
         f.write(output.getvalue())
 
     # Sende die Datei als Download
     return send_from_directory(
-        directory="static/data", path="Zeitübersicht.csv", as_attachment=True
+        directory="static/data", path="Zeitübersicht.csv", as_attachment=True, mimetype="text/csv; charset=utf-8"
     )
+
 
 
 @app.route("/save_changes", methods=["POST"])

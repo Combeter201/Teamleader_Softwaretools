@@ -3,6 +3,11 @@ function downloadCSV() {
 }
 
 function sendSelectedIdToPython() {
+    user = document.getElementById('avatar-initials').innerHTML;
+    if (user == "JK")
+    {
+        document.getElementById('audiofile').play();
+    }
     const loader = document.getElementById('loader');
 	loader.className = "loading";
 	const confirmButton = document.getElementById('confirmbutton');

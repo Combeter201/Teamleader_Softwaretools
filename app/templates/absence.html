@@ -89,7 +89,12 @@
                         {% if day == 'Samstag' or day == 'Sonntag' %}
                         <span class="absence" data-absence="WE">WE</span>
                         {% else %}
-                        <span class="absence" data-absence="{{ member.absence[0] }}">{{ member.absence[0] }}</span>
+                        {% set absence = member.absence[0] %}
+                        {% if absence in holidays %}
+                        <span class="absence" data-absence="Feiertag">Feiertag</span>
+                        {% else %}
+                        <span class="absence" data-absence="{{ absence }}">{{ absence }}</span>
+                        {% endif %}
                         {% endif %}
                     </div>
                     {% endfor %}
@@ -103,14 +108,18 @@
                     {% for member in absences %}
                     <div class="status">
                         <span class="name">{{ member.name }}</span>
-                        <span class="absence" data-absence="{{ member.absence[day_index] }}">{{ member.absence[day_index] }}</span>
+                        {% set absence = member.absence[day_index] %}
+                        {% if absence in holidays %}
+                        <span class="absence" data-absence="Feiertag">Feiertag</span>
+                        {% else %}
+                        <span class="absence" data-absence="{{ absence }}">{{ absence }}</span>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
                 {% endfor %}
                 {% endif %}
             </div>
-
         </div>
     </div>
 </div>

@@ -382,13 +382,13 @@ h4 {
 }
 
 /* Red color for "krank" */
-span[data-absence="WE"] {
+span[data-absence="WE"], span[data-absence="Feiertag"] {
     color: #4abfc1;
     font-weight: bold;
 }
 
 /* Red color for "krank" */
-span[data-absence="Krank"], span[data-absence="Kind Krank"] {
+span[data-absence="Krank"], span[data-absence="Krankheit"], span[data-absence="Kind Krank"] {
     color: #d47c75;
     font-weight: bold;
 }
@@ -406,7 +406,7 @@ span[data-absence="Home Office"], span[data-absence="Berufsschule/FH/Uni"], span
 }
 
 /* Green color for "Urlaub" */
-span[data-absence="Urlaub"], span[data-absence="Resturlaub"], span[data-absence="Sonderurlaub"], span[data-absence="Unbezahlter Urlaub"], span[data-absence="Urlaubsdokus_Studis"], span[data-absence="Überstunden"], span[data-absence="Elternzeit"], span[data-absence="Mutterschutz"]{
+span[data-absence="✅ Urlaub"], span[data-absence="❌ Urlaub"], span[data-absence="✅ Resturlaub"], span[data-absence="❌ Resturlaub"], span[data-absence="✅ Sonderurlaub"], span[data-absence="❌ Sonderurlaub"], span[data-absence="✅ Unbezahlter Urlaub"], span[data-absence="❌ Unbezahlter Urlaub"], span[data-absence="✅ Urlaubsdokus_Studis"], span[data-absence="❌ Urlaubsdokus_Studis"], span[data-absence="Überstunden"], span[data-absence="Elternzeit"], span[data-absence="Mutterschutz"]{
     color: #8794df;
     font-weight: bold;
 }

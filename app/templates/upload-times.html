@@ -52,20 +52,29 @@
                     <input type="file" id="csvFile" name="csvFile" accept=".csv" onchange="submitForm()">
                 </form>
                 <button id="downloadButton" class="upload-button" onclick="downloadTemplate()">
+                    <div class="tooltip">
+                        Template herunterladen
+                    </div>
                     <img src="{{ url_for('static', filename='assets/download.png') }}" alt="Download Icon">
                 </button>
                 <button id="uploadButton" class="upload-button" onclick="openModal()" disabled>
+                    <div class="tooltip">
+                        Zeiten in Teamleader hochladen
+                    </div>
                     <img src="{{ url_for('static', filename='assets/upload.png') }}" alt="Upload Icon">
                 </button>
                 <button type="button" class="clear-button" onclick="clearData()" disabled>
+                    <div class="tooltip">
+                        Ansicht zurücksetzen
+                    </div>
                     <img src="{{ url_for('static', filename='assets/trashcan.png') }}" alt="Abfalleimer">
                 </button>
             </div>
         </div>
         <div id="csvContent">
             {% if error_message %}
-            <img src="/static/assets/upload.gif" id="uploaderror" alt="Uploaderror Icon" height="300px">
             <p class="error-message">{{ error_message }}</p>
+            <img src="/static/assets/upload.gif" id="uploaderror" alt="Uploaderror Icon" height="300px">
             {% endif %}
             {% if success_message %}
             <p class="success-message">{{ success_message }}</p>

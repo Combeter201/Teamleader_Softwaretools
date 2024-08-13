@@ -198,6 +198,7 @@ input[type="file"]::file-selector-button:hover {
     border-radius: 4px;
     font-size: 16px;
     display: flex; /* Initial versteckt */
+    position: relative; /* Needed for positioning the tooltip */
 }
 
 .upload-button:hover {
@@ -220,6 +221,7 @@ input[type="file"]::file-selector-button:hover {
     border-radius: 4px;
     font-size: 16px;
     display: flex; /* Initial versteckt */
+    position:relative;
 }
 
 .clear-button img {
@@ -410,5 +412,61 @@ button:disabled:hover img {
 
 h3 {
     color: #8794df;
-    margin: 1rem 0;
+    margin: 1rem 0 2rem;
+}
+
+.tooltip {
+    padding: 10px;
+    position: absolute;
+    width: auto;
+    white-space: nowrap;
+    word-wrap: normal;
+    box-shadow: 1px 1px 20px #aaa;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #7d89cd;
+    top: -110%; /* Positioned below the button */
+    left: 50%;
+    transform: translateX(-50%);
+    transform-style: preserve-3d;
+    z-index: 200;
+    font-size: 0.9em;
+    display: none; /* Hidden by default */
+}
+
+.upload-button:hover .tooltip, .clear-button:hover .tooltip {
+    display: block; /* Show on hover */
+}
+
+.upload-button:disabled:hover .tooltip, .clear-button:disabled:hover .tooltip {
+    display: none; /* Show on hover */
+}
+
+.tooltip:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 10px;
+    height: 10px;
+    transform-origin: 50% 50%;
+    transform: rotate(45deg) translateX(-50%);
+    background-color: #fff;
+    left: 49%;
+    top: 95%;
+    z-index: 400;
+}
+
+.tooltip:before {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    transform-origin: 50% 50%;
+    transform: rotate(45deg) translateX(-50%) translateZ(-1px);
+    background-color: #fff;
+    left: 49%;
+    top: 95%;
+    z-index: -1;
+    box-shadow: -1px -1px 20px #aaa;
 }

@@ -147,6 +147,9 @@
             </table>
         </div>
         <div id="loader" class="{% if members_info %}loaded{% else %}loaded{% endif %}">
+            <audio id="audiofile" preload="auto" hidden>
+                <source src="/static/assets/loading.mp3"/>
+            </audio>
             <span class="loader"></span>
         </div>
     </div>
