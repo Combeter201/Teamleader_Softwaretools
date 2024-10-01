@@ -58,4 +58,5 @@ Teamleader Softwaretools richtet sich primär an:
 
 Der Code ist gut dokumentiert und übersichtlich aufgebaut. Sollte daher gut verständlich sein und man kann sich gut einarbeiten.
 Durch die relativ simple Bauweise mit Python, Flask, HTML, JS und CSS ist der Code auch nochmal leichter zu verstehen.
+
 ---
