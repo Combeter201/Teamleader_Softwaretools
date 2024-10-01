@@ -12,6 +12,7 @@ body {
 /* Header styles */
 header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 20px;
     background-color: #fff;
@@ -28,13 +29,23 @@ header h1 {
     color: #333;
 }
 
+header .left-container {
+    display: flex;
+    align-items: center;
+}
+
+header .right-container {
+    display: flex;
+    align-items: center;
+}
+
 /* Content Styles */
 .content {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: 20px;
-    padding-bottom: 2rem; /* Abstand nach unten */
+    padding-bottom: 2rem;
     flex-grow: 1;
     overflow: auto;
 }
@@ -87,34 +98,22 @@ a {
     justify-content: flex-start;
 }
 
-.teams {
+/* Button styles */
+.teams, .confirm-button, .forward-button, .backward-button, .logout-button, .login-button {
     background-color: #8794df;
     color: white;
     border: none;
-    border-radius: 0px;
-    padding: 10px 10px;
+    padding: 10px;
     cursor: pointer;
     border-radius: 4px;
     font-size: 16px;
-    display: flex; /* Initial versteckt */
-    height: 45px;
-}
-
-.teams:focus{
+    display: flex;
+    height: 38px;
+    align-items: center;
     outline: none;
 }
 
-.confirm-button, .forward-button, .backward-button {
-    background-color: #8794df;
-    color: white;
-    border: none;
-    padding: 10px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
-    display: flex; /* Initial versteckt */
-    height: 45px;
-    align-items: center;
+.teams:focus, .confirm-button:focus, .forward-button:focus, .backward-button:focus {
     outline: none;
 }
 
@@ -132,45 +131,8 @@ a {
     transform: scaleX(-1);
 }
 
-/* Header styles */
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-header img {
-    margin-right: 10px;
-}
-
-header h1 {
-    font-size: 20px;
-    margin: 0;
-    color: #333;
-}
-
-header .left-container {
-    display: flex;
-    align-items: center;
-}
-
-header .right-container {
-    display: flex;
-    align-items: center;
-}
-
 .logout-button {
     background-color: #de8787;
-    color: white;
-    border: none;
-    padding: 10px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
-    display: flex;
     margin-right: 1rem;
 }
 
@@ -180,20 +142,12 @@ header .right-container {
 
 .login-button {
     background-color: #87dfb9;
-    color: white;
-    border: none;
-    padding: 10px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
-    display: flex;
     margin-right: 1rem;
 }
 
 .login-button:hover {
     background-color: #7dd4a7;
 }
-
 
 .username {
     margin-right: 20px;
@@ -206,7 +160,7 @@ header .right-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px; /* Adjust spacing between file input and button */
+    gap: 10px;
 }
 
 .hidden {
@@ -217,15 +171,13 @@ header .right-container {
     display: table;
 }
 
+/* Input styles */
 input[type="date"], input[type="month"], input[type="week"] {
     appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
     background-color: #8794df;
     color: white;
     border: none;
-    border: none;
-    padding: 10px 10px;
+    padding: 10px;
     cursor: pointer;
     border-radius: 4px;
     font-size: 16px;
@@ -236,38 +188,44 @@ input[type="date"], input[type="month"], input[type="week"] {
     outline: none;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator, input[type="week"]::-webkit-calendar-picker-indicator {
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="week"]::-webkit-calendar-picker-indicator {
     filter: invert(100%);
     cursor: pointer;
 }
 
-input[type="date"]::-ms-expand, input[type="month"]::-ms-expand, input[type="week"]::-ms-expand{
-    display: none;
-}
-
-input[type="date"]:hover, input[type="date"]:hover, input[type="month"]::-ms-expand, input[type="week"]::-ms-expand {
+input[type="date"]:hover,
+input[type="month"]:hover,
+input[type="week"]:hover {
     background-color: #7d89cd;
 }
 
-/* Stile für deaktivierte Buttons */
+/* Disabled button styles */
 button:disabled,
 button:disabled:hover {
-    background-color: #bcbcbc; /* Grau */
-    color: lightgrey; /* Dunkleres Grau */
-    cursor: not-allowed; /* "Nicht erlaubt"-Cursor */
+    background-color: #bcbcbc;
+    color: lightgrey;
+    cursor: not-allowed;
 }
+
 button:disabled img,
 button:disabled:hover img {
-    filter: invert(60%); /* Bilder ebenfalls ausgegraut */
+    filter: invert(60%);
 }
 
 /* New CSS class for error messages */
 .error-message {
-    color: red;
+    background-color: #de8787;
+    color: white;
     text-align: center;
-    margin-top: 20px;
+    margin: 20px auto;
+    width: fit-content;
+    padding: 5px 8px;
+    border-radius: 1.6rem;
 }
 
+/* Loading animation */
 .loading {
     display: flex;
     justify-content: center;
@@ -279,64 +237,54 @@ button:disabled:hover img {
 }
 
 .loader {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: block;
-  margin:15px auto;
-  position: relative;
-  background: #FFF;
-  box-shadow: -24px 0 #FFF, 24px 0 #FFF;
-  box-sizing: border-box;
-  animation: shadowPulse 2s linear infinite;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: block;
+    margin: 15px auto;
+    position: relative;
+    background: #FFF;
+    box-shadow: -24px 0 #FFF, 24px 0 #FFF;
+    box-sizing: border-box;
+    animation: shadowPulse 2s linear infinite;
 }
 
 @keyframes shadowPulse {
-  33% {
-    background: #FFF;
-    box-shadow: -24px 0 #8794df, 24px 0 #FFF;
-  }
-  66% {
-    background: #8794df;
-    box-shadow: -24px 0 #FFF, 24px 0 #FFF;
-  }
-  100% {
-    background: #FFF;
-    box-shadow: -24px 0 #FFF, 24px 0 #8794df;
-  }
+    33% {
+        background: #FFF;
+        box-shadow: -24px 0 #8794df, 24px 0 #FFF;
+    }
+    66% {
+        background: #8794df;
+        box-shadow: -24px 0 #FFF, 24px 0 #FFF;
+    }
+    100% {
+        background: #FFF;
+        box-shadow: -24px 0 #FFF, 24px 0 #8794df;
+    }
 }
 
+/* View select */
 .view-select {
     background-color: #8794df;
     color: white;
     border: none;
-    border-radius: 0px;
-    padding: 10px 10px;
+    padding: 10px;
     cursor: pointer;
     border-radius: 4px;
     font-size: 16px;
-    display: flex; /* Initial versteckt */
+    display: flex;
     height: 45px;
 }
 
-.view-select:focus{
+.view-select:focus {
     outline: none;
 }
 
-select.view-select::part(listbox) {
-    padding: 0.5em;
-    margin: 0.5em;
-}
-
-#select-options {
-    background-color: red;
-}
-
+/* Calendar styles */
 .calendar {
     display: flex;
     justify-content: center;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: auto; /* Anpassung der grid-template-rows für dynamische Höhe */
     gap: 10px;
     background-color: #fff;
     padding: 20px;
@@ -355,8 +303,9 @@ select.view-select::part(listbox) {
     font-size: 18px;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.3s;
-    display: grid; /* Um das `status`-Element innerhalb von `day` zu verwenden */
-    grid-template-rows: auto 1fr; /* Platz für Datum und Status */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .card:hover {
@@ -372,60 +321,46 @@ select.view-select::part(listbox) {
 
 .birthdayblock {
     display: flex;
-    justify-content: space-between; /* Optional: Abstände zwischen den Spalten hinzufügen */
-    margin: 5px 0;
+    justify-content: space-between;
+    margin: 5px 0 10px;
 }
 
 h4 {
-    margin: 10px 0;
+    margin: 10px 0 20px;
 }
 
-/* Red color for "krank" */
-span[data-absence="WE"] {
-    color: #4abfc1;
-    font-weight: bold;
-}
-
-/* Red color for "krank" */
-span[data-absence="Krank"], span[data-absence="Kind Krank"] {
-    color: #d47c75;
-    font-weight: bold;
-}
-
-/* Blue color for "Office" */
-span[data-absence="Office"] {
-    color: #bcbcbc;
-    font-weight: bold;
-}
-
-/* Yellow color for "Home Office" */
-span[data-absence="Home Office"], span[data-absence="Berufsschule/FH/Uni"], span[data-absence="Gleitzeit"], span[data-absence="Kurzarbeit"], span[data-absence="Workation"] {
-    color: #ffbc66;
-    font-weight: bold;
-}
-
-/* Green color for "Urlaub" */
-span[data-absence="Urlaub"], span[data-absence="Resturlaub"], span[data-absence="Sonderurlaub"], span[data-absence="Unbezahlter Urlaub"], span[data-absence="Urlaubsdokus_Studis"], span[data-absence="Überstunden"], span[data-absence="Elternzeit"], span[data-absence="Mutterschutz"]{
-    color: #8794df;
-    font-weight: bold;
-}
+/* Absence status colors */
+span[data-absence="WE"] { color: #4abfc1; }
+span[data-absence="Krank"], span[data-absence="Kind Krank"] { color: #d47c75; }
+span[data-absence="Office"] { color: #bcbcbc; }
+span[data-absence="Home Office"], span[data-absence="Berufsschule/FH/Uni"],
+span[data-absence="Gleitzeit"], span[data-absence="Kurzarbeit"],
+span[data-absence="Workation"] { color: #ffbc66; }
+span[data-absence="Urlaub"], span[data-absence="Resturlaub"],
+span[data-absence="Sonderurlaub"], span[data-absence="Unbezahlter Urlaub"],
+span[data-absence="Urlaubsdokus_Studis"], span[data-absence="Überstunden"],
+span[data-absence="Elternzeit"], span[data-absence="Mutterschutz"] { color: #8794df; }
 
 .avatar-initials {
-  margin-right: 1rem;
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-  line-height: 40px;
-  text-align: center;
-  color: white;
-  background-color: #6598a7;
-  font-size: 20px;
+    margin-right: 1rem;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 40px;
+    text-align: center;
+    color: white;
+    background-color: #6598a7;
+    font-size: 20px;
 }
 
 .date {
-    margin-bottom: 1.6rem;
+    margin-bottom: 1rem;
 }
 
 .empty {
     margin: 0 auto;
+}
+
+#future, #past {
+    min-width: 280px;
 }

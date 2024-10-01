@@ -237,15 +237,24 @@ input[type="file"]::file-selector-button:hover {
 
 /* New CSS class for error messages */
 .error-message {
-    color: red;
+    background-color: #de8787;
+    color: white;
     text-align: center;
-    margin-top: 20px;
+    margin: 20px auto;
+    width: fit-content;
+    padding: 5px 8px;
+    border-radius: 1.6rem;
 }
 
+/* New CSS class for success messages */
 .success-message {
-    color: green;
+    background-color: #87dfb9;
+    color: white;
     text-align: center;
-    margin-top: 20px;
+    margin: 20px auto;
+    width: fit-content;
+    padding: 5px 8px;
+    border-radius: 1.6rem;
 }
 
 /* custom.css */

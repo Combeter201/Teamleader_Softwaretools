@@ -1,4 +1,6 @@
 import csv
+import io
+import os
 from collections import defaultdict
 from datetime import datetime
 from io import StringIO
@@ -110,3 +112,46 @@ def group_by_date(csv_data: List[Dict[str, str]]) -> Dict[str, List[Dict[str, An
             continue
 
     return grouped_data
+
+
+def save_illness_table_to_csv(illness_table, current_month):
+    """
+    Speichert die illness_table in eine CSV-Datei.
+
+    Args:
+        illness_table (list): Liste von Dictionaries mit Krankheitsdaten
+        current_month (str): Aktueller Monat im Format "YYYY-MM"
+
+    Returns:
+        str: Der Dateiname der gespeicherten CSV-Datei
+    """
+    filename = f"Krankheitsübersicht_{current_month}.csv"
+    filepath = os.path.join("static", "downloads", filename)
+
+    # Stelle sicher, dass das Verzeichnis existiert
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
+    # Erstelle einen IO-Stream für die CSV-Datei
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=";")  # Nutze ; als Trennzeichen
+
+    # Schreibe die Kopfzeile in die CSV-Datei
+    writer.writerow(["Mitarbeiter", "Krankheitstage", "Stunden"])
+
+    # Schreibe die Krankheitsinformationen in die CSV-Datei
+    for row in illness_table:
+        writer.writerow([
+            row["employee"],
+            row["days"],
+            row["hours"]
+        ])
+
+    # Setze den Cursor des IO-Streams auf den Anfang
+    output.seek(0)
+
+    # Schreibe den Inhalt in die CSV-Datei mit newline=''
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        f.write("\ufeff")  # BOM für Excel-Kompatibilität
+        f.write(output.getvalue())
+
+    return filename

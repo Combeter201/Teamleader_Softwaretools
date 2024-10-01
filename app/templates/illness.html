@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teamleader Softwaretools</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/absence.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/illness.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumbs.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bugreport.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
@@ -46,7 +46,7 @@
         </li>
         <li class="breadcrumb-item active">
             <img src="/static/assets/chevron.svg" class="breadcrumb-spacer" alt="Home Icon" width="16" height="16">
-            Abwesenheiten einsehen
+            Krankheitsstunden einsehen
         </li>
     </ol>
 </nav>
@@ -54,16 +54,11 @@
     <div class="box-container">
         <div class="box">
             <div class="teamleader-users-container">
-                <select id="viewSelect" class="view-select" onchange="changeView()">
-                    <option value="day" {% if view=="date" %}selected{% endif %}>Tag</option>
-                    <option value="week" {% if view=="week" %}selected{% endif %}>Woche</option>
-                    <option value="month" hidden>Monat</option>
-                </select>
                 <button type="button" class="backward-button"
                         onclick="setDateBackward()">
                     <img src="{{ url_for('static', filename='assets/chevron.svg') }}" alt="" width="32">
                 </button>
-                <input type="{% if view == 'date' %}date{% elif view == 'week' %}week{% else %}date{% endif %}"
+                <input type="month"
                        id="date"
                        name="date" class="date-input" value="{{ today }}">
                 <button type="button" class="forward-button"
@@ -73,59 +68,39 @@
                 <button type="button" class="confirm-button" id="confirmbutton" onclick="checkAbsenceForDate()">
                     Bestätigen
                 </button>
+                <button class="download-button" id="download-button" onclick="downloadCSV()" disabled>
+                    <div class="tooltip">
+                        Krankheitsübersicht herunterladen
+                    </div>
+                    <img src="{{ url_for('static', filename='assets/download.png') }}" alt="Upload Icon">
+                </button>
             </div>
         </div>
-        <div id="box-content">
-            {% if absences %}
-            <div id="loader" class="{% if not absences %}loaded{% else %}loaded{% endif %}">
+        <div class="box-content" id="box-content">
+            <div id="loader" class="{% if illness %}loaded{% else %}loaded{% endif %}">
                 <span class="loader"></span>
             </div>
-            {% endif %}
             {% if error_message %}
-            <p class="error-message">{{ error_message }}</p>
+            <p class="error-message" id="error-message">{{ error_message }}</p>
             {% endif %}
-            <div class="calendar" id="calendar">
-                {% if view == 'date' %}
-                <div class="day">
-                    <h4>{{ day }}</h4>
-                    <span class="date">{{ date[0] }}</span>
-                    {% for member in absences %}
-                    <div class="status">
-                        <span class="name">{{ member.name }}</span>
-                        {% if day == 'Samstag' or day == 'Sonntag' %}
-                        <span class="absence" data-absence="WE">WE</span>
-                        {% else %}
-                        {% set absence = member.absence[0] %}
-                        {% if absence in holidays %}
-                        <span class="absence" data-absence="Feiertag">Feiertag</span>
-                        {% else %}
-                        <span class="absence" data-absence="{{ absence }}">{{ absence }}</span>
-                        {% endif %}
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% elif view == 'week' %}
-                {% set days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'] %}
-                {% for day_index in range(days|length) %}
-                <div class="day" id="{{ days[day_index]|lower }}">
-                    <h4>{{ days[day_index] }}</h4>
-                    <span class="date" id="{{ days[day_index]|lower }}Date">{{ date[day_index] }}</span>
-                    {% for member in absences %}
-                    <div class="status">
-                        <span class="name">{{ member.name }}</span>
-                        {% set absence = member.absence[day_index] %}
-                        {% if absence in holidays %}
-                        <span class="absence" data-absence="Feiertag">Feiertag</span>
-                        {% else %}
-                        <span class="absence" data-absence="{{ absence }}">{{ absence }}</span>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
+            <table id="membersTable" class="{% if illness %}visible{% else %}hidden{% endif %}">
+                <thead>
+                <tr>
+                    <th>Mitarbeiter</th>
+                    <th>Krankheitstage</th>
+                    <th>Fehlstunden</th>
+                </tr>
+                </thead>
+                <tbody id="membersTableBody">
+                {% for member in illness %}
+                <tr>
+                    <td>{{ member.employee }}</td>
+                    <td class="times">{{ member.days }}</td>
+                    <td class="times">{{ member.hours }}</td>
+                </tr>
                 {% endfor %}
-                {% endif %}
-            </div>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -148,7 +123,7 @@
 <div id="message-container"></div>
 <!-- Separate JavaScript file -->
 <script src="{{ url_for('static', filename='js/bugreport.js') }}"></script>
-<script src="{{ url_for('static', filename='js/absence.js') }}"></script>
+<script src="{{ url_for('static', filename='js/illness.js') }}"></script>
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 </html>

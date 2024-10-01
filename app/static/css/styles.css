@@ -75,7 +75,8 @@ header .right-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative; /* Needed for the ribbon positioning */
+  position: relative;
+  /* Needed for the ribbon positioning */
 }
 
 .box:hover {
@@ -215,6 +216,46 @@ a {
   color: white;
   text-align: center;
   transform: rotate(45deg);
-  -webkit-transform: rotate(45deg); /* Safari */
+  -webkit-transform: rotate(45deg);
+  /* Safari */
   font-size: 14px;
+}
+.loading {
+display: flex;
+    position: absolute;
+    justify-content: center;
+    top: 2%;
+    left: 49.5%;
+}
+
+.loaded {
+    display: none;
+}
+
+.loader {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: block;
+  margin:15px auto;
+  position: relative;
+  background: #fff;
+  box-shadow: -24px 0 #fff, 24px 0 #fff;
+  box-sizing: border-box;
+  animation: shadowPulse 2s linear infinite;
+}
+
+@keyframes shadowPulse {
+  33% {
+    background: #fff;
+    box-shadow: -24px 0 #8794df, 24px 0 #fff;
+  }
+  66% {
+    background: #8794df;
+    box-shadow: -24px 0 #fff, 24px 0 #fff;
+  }
+  100% {
+    background: #fff;
+    box-shadow: -24px 0 #fff, 24px 0 #8794df;
+  }
 }

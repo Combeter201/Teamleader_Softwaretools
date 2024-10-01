@@ -1,7 +1,13 @@
+/**
+ * Leitet den Benutzer zur Autorisierungsseite weiter.
+ */
 function login() {
-   window.location.href = '/authorize-teamleader'; // Hier leitest du zur Autorisierungsseite weiter
+    window.location.href = '/authorize-teamleader';
 }
 
+/**
+ * Leitet den Benutzer zur Abmeldeseite weiter.
+ */
 function logout() {
-   window.location.href = '/logout'; // Hier leitest du zur Autorisierungsseite weiter
+    window.location.href = '/logout';
 }

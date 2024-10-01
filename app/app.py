@@ -7,7 +7,10 @@ import tempfile
 import time
 from datetime import date, datetime, timedelta
 
+from werkzeug.utils import secure_filename
+
 import requests
+
 from config import Config
 from flask import (
     Flask,
@@ -18,7 +21,7 @@ from flask import (
     send_from_directory,
     session,
 )
-from utils.csv_utils import parse_csv, group_by_date
+from utils.csv_utils import parse_csv, group_by_date, save_illness_table_to_csv
 from utils.date_utils import calculate_total_hours
 from utils.teamleader_utils import (
     get_all_users,
@@ -29,7 +32,10 @@ from utils.teamleader_utils import (
     get_teamleader_user_info,
     get_teamleader_user_times,
     get_user_absence,
-    refresh_teamleader_token, get_contact_info,
+    refresh_teamleader_token,
+    get_contact_info,
+    get_projects,
+    get_special_working_hours, get_number_of_illness_days,
 )
 
 app = Flask(__name__)
@@ -75,6 +81,7 @@ def home():
         username = session.get("username")
         initials = session.get("initials")
         whitelist = load_whitelist()
+        print(user_id)
         user_permissions = next(
             (user for user in whitelist if user["id"] == user_id), None
         )
@@ -83,11 +90,12 @@ def home():
         if user_permissions:
             return render_template(
                 "index.html",
-                username=user_permissions["name"],
+                username=user_permissions["employee"],
                 upload_times=user_permissions["upload_times"],
                 manage_times=user_permissions["manage_times"],
                 absence=user_permissions["absence"],
                 birthday=user_permissions["birthday"],
+                projects=user_permissions["projects"],
                 authorizations=user_permissions["authorizations"],
                 initials=initials,
             )
@@ -111,6 +119,12 @@ def authorizations():
 
     user_list = get_all_users(access_token)
 
+    if user_list != None:
+        with open("static/data/whitelist.json", "w", encoding="utf-8") as file:
+            json.dump(user_list, file, ensure_ascii=False, indent=4)
+    else:
+        return render_template("error.html", username=username, initials=initials)
+
     return render_template(
         "authorizations.html", username=username, initials=initials, user_list=user_list
     )
@@ -123,8 +137,63 @@ def error():
     return render_template("error.html", username=username, initials=initials)
 
 
-@app.route("/birthday.html")
+@app.route("/projects.html")
+def projects():
+    error_redirect = handle_token_refresh()
+    if error_redirect:
+        return error_redirect
+
+    username = session.get("username")
+    initials = session.get("initials")
+
+    user_permissions = session.get("user_permissions", {})
+    if not user_permissions.get("authorizations", False):
+        return render_template("error.html", username=username, initials=initials)
+
+    # Loading whitelist data from whitelist.json
+    with open("static/data/projects.json", "r", encoding="utf-8") as f:
+        projects = json.load(f)
+
+    return render_template(
+        "projects.html", username=username, initials=initials, projects=projects
+    )
+
+
+@app.route("/update_projects", methods=["POST", "GET"])
+def updateProjects():
+    error_redirect = handle_token_refresh()
+    if error_redirect:
+        return error_redirect
+
+    username = session.get("username")
+    initials = session.get("initials")
+    access_token = session.get("access_token")
+
+    user_permissions = session.get("user_permissions", {})
+    if not user_permissions.get("authorizations", False):
+        return render_template("error.html", username=username, initials=initials)
+
+    projects = get_projects(access_token)
+
+    if projects == []:
+        try:
+            with open("static/data/projects.json", "w", encoding="utf-8") as file:
+                json.dump(projects, file, ensure_ascii=False, indent=4)
+
+            return jsonify({"status": "success"})
+
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)})
+    else:
+        return jsonify({"status": "info"})
+
+
+@app.route("/birthday.html", methods=["POST", "GET"])
 def birthday():
+    error_redirect = handle_token_refresh()
+    if error_redirect:
+        return error_redirect
+
     username = session.get("username")
     initials = session.get("initials")
     access_token = session.get("access_token")
@@ -142,6 +211,7 @@ def birthday():
         members=members,
     )
 
+
 @app.route("/absence.html", methods=["POST", "GET"])
 def absence():
     error_redirect = handle_token_refresh()
@@ -156,12 +226,23 @@ def absence():
     week_dates = []
     selected_date = ""
 
-    holidays = set([
-        "Neujahr", "Heilige Drei Könige", "Karfreitag", "Ostermontag",
-        "Tag der Arbeit", "Christi Himmelfahrt", "Pfingstmontag",
-        "Fronleichnam", "Mariä Himmelfahrt", "Tag der Deutschen Einheit",
-        "Allerheiligen", "1. Weihnachtstag", "2. Weihnachtstag"
-    ])
+    holidays = set(
+        [
+            "Neujahr",
+            "Heilige Drei Könige",
+            "Karfreitag",
+            "Ostermontag",
+            "Tag der Arbeit",
+            "Christi Himmelfahrt",
+            "Pfingstmontag",
+            "Fronleichnam",
+            "Mariä Himmelfahrt",
+            "Tag der Deutschen Einheit",
+            "Allerheiligen",
+            "Erster Weihnachtstag",
+            "Zweiter Weihnachtstag",
+        ]
+    )
 
     try:
         request_data = request.get_json()
@@ -182,7 +263,14 @@ def absence():
         elif inputType == "week":
             selected_date = date_param
             year, week = date_param.split("-W")
-            date_requested = datetime.strptime(f"{year}-W{week}-1", "%Y-W%W-%w").date()
+            if year == "2025":
+                date_requested = datetime.strptime(
+                    f"{year}-W{week}-1", "%Y-W%W-%w"
+                ).date() - timedelta(days=7)
+            else:
+                date_requested = datetime.strptime(
+                    f"{year}-W{week}-1", "%Y-W%W-%w"
+                ).date()
             startDate = date_requested - timedelta(days=date_requested.weekday())
             endDate = startDate + timedelta(days=5)
 
@@ -238,7 +326,7 @@ def absence():
             error_message=error_message,
             username=username,
             initials=initials,
-            holidays=holidays
+            holidays=holidays,
         )
 
     # Prepare list for absences
@@ -251,7 +339,7 @@ def absence():
             for team in response:
                 for member in team["members"]:
                     if member["id"] == user_info["id"]:
-                        name = user_info["name"]
+                        name = user_info["employee"]
                         break
                 else:
                     continue
@@ -308,9 +396,104 @@ def absence():
         view=outputType,
         day=day_of_week,
         date=week_dates,
-        holidays=holidays
+        holidays=holidays,
     )
 
+
+@app.route("/illness.html")
+def illness():
+
+    username = session.get("username")
+    initials = session.get("initials")
+    user_permissions = session.get("user_permissions", {})
+
+    if not user_permissions.get("absence", False):
+        return render_template("error.html", username=username, initials=initials)
+
+    # Hol dir das heutige Datum
+    current_date = date.today()
+
+    # Formatiere den Monat im Format "YYYY-MM"
+    currentMonth = current_date.strftime("%Y-%m")
+
+    return render_template(
+        "illness.html",
+        username=username,
+        initials=initials,
+        today=currentMonth,
+    )
+
+
+@app.route("/illness.html", methods=["POST", "GET"])
+def get_illness_days():
+    username = session.get("username")
+    initials = session.get("initials")
+    user_permissions = session.get("user_permissions", {})
+
+    if not user_permissions.get("absence", False):
+        return render_template("error.html", username=username, initials=initials)
+
+    # Hol dir das heutige Datum
+    request_data = request.get_json()
+    current_date_str = request_data.get("date")
+    current_date = datetime.strptime(current_date_str, "%Y-%m")
+    current_date.strftime("%Y-%m-01")
+
+    # Berechne den ersten Tag des aktuellen Monats
+    first_day_of_current_month = current_date.replace(day=1)
+
+    # Berechne den letzten Tag des Vormonats (start_date)
+    start_date = (first_day_of_current_month - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    # Berechne den ersten Tag des Folgemonats (end_date)
+    if current_date.month == 12:
+        end_date = date(current_date.year + 1, 1, 1).strftime("%Y-%m-%d")
+    else:
+        end_date = date(current_date.year, current_date.month + 1, 1).strftime("%Y-%m-%d")
+
+    # Formatiere den Monat im Format "YYYY-MM"
+    currentMonth = current_date.strftime("%Y-%m")
+
+    # Lade die Whitelist
+    with open("static/data/whitelist.json", "r", encoding="utf-8") as f:
+        whitelist = json.load(f)
+
+    illness_table = []
+
+    # Hole das Access-Token (Annahme: Es ist in der Session gespeichert)
+    access_token = session.get("access_token")
+
+    for index, employee in enumerate(whitelist, 1):
+        days = get_number_of_illness_days(access_token, employee["id"], start_date, end_date)
+        if days > 0:
+            illness_table.append({
+                "employee": employee["employee"],
+                "days": str(days),
+                "hours": str(days * 8)
+            })
+
+    # Monatsname für die Fehlermeldung
+    month_name = current_date.strftime("%B")
+
+    if illness_table:
+        save_illness_table_to_csv(illness_table, currentMonth)
+        session["currentMonth"] = currentMonth
+
+        return render_template(
+            "illness.html",
+            username=username,
+            initials=initials,
+            today=currentMonth,
+            illness=illness_table
+        )
+    else:
+        return render_template(
+            "illness.html",
+            username=username,
+            initials=initials,
+            today=currentMonth,
+            error_message=f"Im {month_name} gab es keine Krankheitsausfälle"
+        )
 
 
 @app.route("/upload-times.html")
@@ -334,8 +517,13 @@ def zeiten_verwalten():
 
     if not user_permissions.get("manage_times", False):
         return render_template("error.html", username=username, initials=initials)
-    return render_template("manage-times.html", username=username, initials=initials, team_id="",
-                           selectedMonth=selectedMonth)
+    return render_template(
+        "manage-times.html",
+        username=username,
+        initials=initials,
+        team_id="",
+        selectedMonth=selectedMonth,
+    )
 
 
 @app.route("/manage-times.html", methods=["POST"])
@@ -353,16 +541,21 @@ def get_teams():
     # Umwandlung in ein Datum (wir nehmen den ersten Tag des Monats)
     selected_date = datetime.strptime(selectedMonth + "-01", "%Y-%m-%d")
 
-    # Berechnung des ersten und letzten Tags des Monats
-    beginofMonth = (selected_date - timedelta(days=1)).strftime("%Y-%m-%d")
-    # Finde den letzten Tag des Monats durch den ersten Tag des nächsten Monats
-    next_month = selected_date.replace(day=28) + timedelta(
-        days=4
-    )  # Gehe einen Monat weiter
-    endofMonth = (
-            (next_month - timedelta(days=next_month.day)) + timedelta(days=1)
-    ).strftime("%Y-%m-%d")
     selected_id = request_data.get("selectedId")
+
+    if selected_id == "-2":
+        previous_month = selected_date.replace(day=1) - timedelta(days=1)
+        beginofMonth = previous_month.replace(day=15).strftime("%Y-%m-%d")
+        endofMonth = selected_date.replace(day=16).strftime("%Y-%m-%d")
+    else:
+        # Berechnung des ersten und letzten Tags des Monats
+        beginofMonth = (selected_date - timedelta(days=1)).strftime("%Y-%m-%d")
+        # Finde den letzten Tag des Monats durch den ersten Tag des nächsten Monats
+        next_month = selected_date.replace(day=28) + timedelta(days=4)
+        # Gehe einen Monat weiter
+        endofMonth = (
+            (next_month - timedelta(days=next_month.day)) + timedelta(days=1)
+        ).strftime("%Y-%m-%d")
     selectedOption = request_data.get("selectedOption")
     team_name = request_data.get("team_name")
     first_tmstmp = request_data.get("first_tmstmp")
@@ -375,9 +568,12 @@ def get_teams():
     workdays_count = 0
 
     # Schleife durch alle Tage des Monats und zähle die Arbeitstage
-    current_day = selected_date
+    if selected_id == "-2":
+        current_day = datetime.strptime(beginofMonth, "%Y-%m-%d") - timedelta(days=1)
+    else:
+        current_day = selected_date
     while current_day <= (
-            datetime.strptime(endofMonth, "%Y-%m-%d") - timedelta(days=1)
+        datetime.strptime(endofMonth, "%Y-%m-%d") - timedelta(days=1)
     ):
         # Prüfe, ob der aktuelle Tag ein Arbeitstag ist (Montag bis Freitag)
         if current_day.weekday() < 5:  # Montag (0) bis Freitag (4)
@@ -394,10 +590,15 @@ def get_teams():
         for member in members:
             member_id = member.get("id")
             first_name, last_name = get_teamleader_user_info(access_token, member_id)
+            print(first_name, last_name)
 
             try:
                 days_of_absence = get_number_of_absence_days(
                     access_token, member_id, beginofMonth, endofMonth
+                )
+
+                special_working_hours = get_special_working_hours(
+                    member_id, workdays_count
                 )
 
                 times_data = get_teamleader_user_times(
@@ -414,24 +615,31 @@ def get_teams():
                     {
                         "first_name": first_name,
                         "last_name": last_name,
-                        "total_duration": times_data["total_duration"].replace(".", ","),
-                        "invoiceable_duration": times_data["invoiceable_duration"].replace(".", ","),
-                        "non_invoiceable_duration": times_data["non_invoiceable_duration"].replace(".", ","),
-                        "total_days": workdays_count - days_of_absence,
+                        "total_duration": times_data["total_duration"].replace(
+                            ".", ","
+                        ),
+                        "invoiceable_duration": times_data[
+                            "invoiceable_duration"
+                        ].replace(".", ","),
+                        "non_invoiceable_duration": times_data[
+                            "non_invoiceable_duration"
+                        ].replace(".", ","),
+                        "total_days": str(special_working_hours - days_of_absence),
                         "invoiceable_percentage": "{:.2f}".format(
                             float(times_data["invoiceable_duration"].replace(",", "."))
-                            / ((workdays_count - days_of_absence) * 8)
+                            / ((special_working_hours - days_of_absence) * 8)
                         ).replace(".", ","),
                         "overtime_hours": "{:.2f}".format(
                             float(times_data["total_duration"].replace(",", "."))
-                            - (workdays_count - days_of_absence) * 8
+                            - (special_working_hours - days_of_absence) * 8
                         ).replace(".", ","),
                     }
                 )
 
             except Exception as e:
                 error_message = (
-                    f"Dir fehlen die Berechtigung, um dieses Team anzuschauen"
+                    e,
+                    f"Dir fehlen die Berechtigung, um dieses Team anzuschauen",
                 )
                 return render_template(
                     "manage-times.html",
@@ -441,8 +649,9 @@ def get_teams():
                     selectedMonth=selectedMonth,
                     team_id=selected_id,
                     selectedOption=selectedOption,
-                    team_name=team_name
+                    team_name=team_name,
                 )
+        time.sleep(5)
 
     session["members_info"] = members_info
     return render_template(
@@ -453,7 +662,7 @@ def get_teams():
         selectedMonth=selectedMonth,
         team_id=selected_id,
         selectedOption=selectedOption,
-        team_name=team_name
+        team_name=team_name,
     )
 
 
@@ -461,6 +670,20 @@ def get_teams():
 def download_template():
     return send_from_directory(
         directory="static/data", path="template.csv", as_attachment=True
+    )
+
+
+@app.route("/download-json")
+def download_json():
+    return send_from_directory(
+        directory="static/data", path="projects.json", as_attachment=True
+    )
+
+
+@app.route("/download-tickets")
+def download_tickets():
+    return send_from_directory(
+        directory="static/data", path="tickets.json", as_attachment=True
     )
 
 
@@ -585,6 +808,7 @@ def login():
 
     try:
         user_info = get_teamleader_user(access_token)
+
         session["username"] = f"{user_info['first_name']} {user_info['last_name']}"
         session["initials"] = f"{user_info['first_name'][0]}{user_info['last_name'][0]}"
         session["userId"] = user_info["id"]
@@ -624,7 +848,7 @@ def fetch_teamleader_data():
         # Datum und Zeit in das gewünschte Format konvertieren
         date_time_str = f"{datum} {von}"
         started_at = (
-                datetime.strptime(date_time_str, "%d.%m.%Y %H:%M").isoformat() + "+02:00"
+            datetime.strptime(date_time_str, "%d.%m.%Y %H:%M").isoformat() + "+02:00"
         )
 
         # Dauer berechnen
@@ -688,8 +912,8 @@ def clear_data():
     return jsonify({"status": "success", "message": "Daten erfolgreich gelöscht"})
 
 
-@app.route("/download-csv")
-def download_csv():
+@app.route("/download_times_csv")
+def download_times_csv():
     # Rufe die Mitgliederinformationen ab
     members_info = session.get("members_info")
 
@@ -730,18 +954,43 @@ def download_csv():
     output.seek(0)
 
     # Speichere die CSV-Datei temporär auf dem Server
-    csv_filename = "static/data/Zeitübersicht.csv"  # Beispiel: Temporärer Pfad
+    csv_filename = "static/downloads/Zeitübersicht.csv"  # Beispiel: Temporärer Pfad
 
     # Schreibe den Inhalt in die CSV-Datei mit newline=''
-    with open(csv_filename, "w", newline="", encoding='utf-8') as f:
-        f.write('\ufeff')
+    with open(csv_filename, "w", newline="", encoding="utf-8") as f:
+        f.write("\ufeff")
         f.write(output.getvalue())
 
     # Sende die Datei als Download
     return send_from_directory(
-        directory="static/data", path="Zeitübersicht.csv", as_attachment=True, mimetype="text/csv; charset=utf-8"
+        directory="static/downloads",
+        path="Zeitübersicht.csv",
+        as_attachment=True,
+        mimetype="text/csv; charset=utf-8",
     )
 
+
+@app.route("/download_illness_csv")
+def download_csv():
+    """
+    Lädt die angegebene CSV-Datei herunter.
+
+    Args:
+        filename (str): Der Name der CSV-Datei
+
+    Returns:
+        file: Die heruntergeladene CSV-Datei
+    """
+
+    currentMonth = session.get("currentMonth")
+    filename = f"Krankheitsübersicht_{currentMonth}.csv"
+
+    return send_from_directory(
+        directory="static/data",
+        path=filename,
+        as_attachment=True,
+        mimetype="text/csv; charset=utf-8",
+    )
 
 
 @app.route("/save_changes", methods=["POST"])
@@ -752,7 +1001,7 @@ def save_changes():
             data = json.load(file)
 
         for user in data:
-            employee = user["name"]
+            employee = user["employee"]
             if employee in changes:
                 for permission, value in changes[employee].items():
                     if permission in user:
@@ -765,6 +1014,142 @@ def save_changes():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
+
+def load_tickets():
+    with open("static/data/tickets.json", "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_tickets(tickets):
+    with open("static/data/tickets.json", "w", encoding="utf-8") as f:
+        json.dump(tickets, f, indent=2, default=str)
+
+
+@app.route("/create_ticket", methods=["POST"])
+def create_ticket():
+    username = session.get("username")
+    tickets = load_tickets()
+
+    # Set the locale to German for correct day and month names
+    locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
+
+    new_ticket = {
+        "id": len(tickets) + 1,
+        "title": request.form.get("title"),
+        "description": request.form.get("text"),
+        "status": "Offen",
+        "created_at": datetime.now().strftime("%a, %d. %B %Y, %H:%M:%S Uhr"),
+        "images": [],
+        "user": username,
+    }
+
+    images = request.files.getlist("images")
+    for image in images:
+        if image:
+            filename = request.form.get("title") + secure_filename(image.filename)
+            image.save(os.path.join("static/uploads", filename))
+            new_ticket["images"].append(filename)
+
+    tickets.append(new_ticket)
+    save_tickets(tickets)
+
+    return jsonify({"message": "Ticket erstellt!", "id": new_ticket["id"]}), 201
+
+
+@app.route("/tickets.html")
+def list_tickets():
+    user_id = session.get("userId")
+    username = session.get("username")
+    initials = session.get("initials")
+    whitelist = load_whitelist()
+
+    tickets = load_tickets()
+    tickets.sort(key=lambda x: (x["status"], x["created_at"]), reverse=True)
+    return render_template(
+        "tickets.html",
+        tickets=tickets,
+        initials=initials,
+        username=username,
+    )
+
+    tickets = load_tickets()
+    tickets.sort(key=lambda x: (x["status"], x["created_at"]), reverse=True)
+    return render_template(
+        "tickets.html",
+        tickets=tickets,
+        initials=initials,
+        username=user_permissions["employee"],
+    )
+
+
+@app.route("/ticket/<int:ticket_id>")
+def view_ticket(ticket_id):
+    tickets = load_tickets()
+    ticket = next((t for t in tickets if t["id"] == ticket_id), None)
+    if ticket is None:
+        return "Ticket nicht gefunden", 404
+    return render_template("ticket_detail.html", ticket=ticket)
+
+
+@app.route("/archive_closed_tickets", methods=["POST"])
+def archive_closed_tickets():
+    tickets = load_tickets()
+
+    updated_count = 0
+
+    # Gehe durch alle Tickets und setze den Status von "Geschlossen" auf "Archiviert"
+    for ticket in tickets:
+        if ticket["status"] == "Geschlossen":
+            ticket["status"] = "Archiviert"
+            updated_count += 1
+
+    # Speichere nur, wenn mindestens ein Ticket aktualisiert wurde
+    if updated_count > 0:
+        save_tickets(tickets)
+        return jsonify({"message": f"{updated_count} Ticket(s) wurden archiviert"}), 200
+    else:
+        return jsonify({"message": "Keine Tickets zum Archivieren gefunden"}), 404
+
+
+@app.route("/update_status/<int:ticket_id>", methods=["POST"])
+def update_status(ticket_id):
+    tickets = load_tickets()
+    ticket = next((t for t in tickets if t["id"] == ticket_id), None)
+    if ticket is None:
+        return jsonify({"message": "Ticket nicht gefunden"}), 404
+
+    data = request.get_json()
+    if "status" in data:
+        ticket["status"] = data["status"]
+        save_tickets(tickets)
+        return jsonify({"message": "Status aktualisiert"}), 200
+    else:
+        return jsonify({"message": "Ungültige Anfrage"}), 400
+
+
+@app.route("/delete_ticket/<int:ticket_id>", methods=["DELETE"])
+def delete_ticket(ticket_id):
+    tickets = load_tickets()
+    ticket_index = next(
+        (index for (index, t) in enumerate(tickets) if t["id"] == ticket_id), None
+    )
+
+    if ticket_index is not None:
+        ticket = tickets[ticket_index]
+
+        # Löschen der Bilder
+        for image in ticket["images"]:
+            image_path = os.path.join("static/uploads", image)
+            if os.path.exists(image_path):
+                os.remove(image_path)
+
+        # Ticket aus der Liste entfernen
+        tickets.pop(ticket_index)
+        save_tickets(tickets)
+        return jsonify({"message": "Ticket gelöscht"}), 200
+    else:
+        return jsonify({"message": "Ticket nicht gefunden"}), 404
 
 
 # Dummy setup for session for testing purposes
