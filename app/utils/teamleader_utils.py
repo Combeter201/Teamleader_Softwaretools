@@ -120,7 +120,7 @@ def get_all_users(access_token: str) -> Optional[List[Dict[str, Any]]]:
             {
                 "employee": f'{user["first_name"]} {user["last_name"]}',
                 "id": user["id"],
-                "team_id": user["teams"][0]["id"],
+                "team_id": user["teams"][0]["id"] if user["teams"] else None,
                 "role": user["function"],
             }
             for user in data

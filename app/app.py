@@ -653,7 +653,50 @@ def get_teams():
                 )
         time.sleep(5)
 
-    session["members_info"] = members_info
+    # Erstelle einen IO-Stream für die CSV-Datei
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=";")  # Nutze ; als Trennzeichen
+
+    # Schreibe die Kopfzeile in die CSV-Datei
+    writer.writerow(
+        [
+            "Vorname",
+            "Nachname",
+            "Erfasste Zeit",
+            "Abrechenbar",
+            "Nicht Abrechenbar",
+            "Arbeitstage",
+            "Fakuraquote",
+            "Überstunden",
+        ]
+    )
+
+    # Schreibe die Mitgliederinformationen in die CSV-Datei
+    for member in members_info:
+        writer.writerow(
+            [
+                member["first_name"],
+                member["last_name"],
+                member["total_duration"],
+                member["invoiceable_duration"],
+                member["non_invoiceable_duration"],
+                member["total_days"],
+                member["invoiceable_percentage"],
+                member["overtime_hours"],
+            ]
+        )
+
+    # Setze den Cursor des IO-Streams auf den Anfang
+    output.seek(0)
+
+    # Speichere die CSV-Datei temporär auf dem Server
+    csv_filename = "static/downloads/Zeitübersicht.csv"  # Beispiel: Temporärer Pfad
+
+    # Schreibe den Inhalt in die CSV-Datei mit newline=''
+    with open(csv_filename, "w", newline="", encoding="utf-8") as f:
+        f.write("\ufeff")
+        f.write(output.getvalue())
+
     return render_template(
         "manage-times.html",
         members_info=members_info,
@@ -915,51 +958,6 @@ def clear_data():
 @app.route("/download_times_csv")
 def download_times_csv():
     # Rufe die Mitgliederinformationen ab
-    members_info = session.get("members_info")
-
-    # Erstelle einen IO-Stream für die CSV-Datei
-    output = io.StringIO()
-    writer = csv.writer(output, delimiter=";")  # Nutze ; als Trennzeichen
-
-    # Schreibe die Kopfzeile in die CSV-Datei
-    writer.writerow(
-        [
-            "Vorname",
-            "Nachname",
-            "Erfasste Zeit",
-            "Abrechenbar",
-            "Nicht Abrechenbar",
-            "Arbeitstage",
-            "Fakuraquote",
-            "Überstunden",
-        ]
-    )
-
-    # Schreibe die Mitgliederinformationen in die CSV-Datei
-    for member in members_info:
-        writer.writerow(
-            [
-                member["first_name"],
-                member["last_name"],
-                member["total_duration"],
-                member["invoiceable_duration"],
-                member["non_invoiceable_duration"],
-                member["total_days"],
-                member["invoiceable_percentage"],
-                member["overtime_hours"],
-            ]
-        )
-
-    # Setze den Cursor des IO-Streams auf den Anfang
-    output.seek(0)
-
-    # Speichere die CSV-Datei temporär auf dem Server
-    csv_filename = "static/downloads/Zeitübersicht.csv"  # Beispiel: Temporärer Pfad
-
-    # Schreibe den Inhalt in die CSV-Datei mit newline=''
-    with open(csv_filename, "w", newline="", encoding="utf-8") as f:
-        f.write("\ufeff")
-        f.write(output.getvalue())
 
     # Sende die Datei als Download
     return send_from_directory(
